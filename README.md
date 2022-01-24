@@ -25,12 +25,12 @@ git clone https://github.com/yugabyte/simple-java-app-yugabyte-cloud.git
 
 ## Provide Yugabyte Cloud Settings
 
-The application needs to know how to establish a secured connection with your Yugabyte Cloud instance. To do that:
+The application needs to establish a secured connection to your Yugabyte Cloud instance. To do that:
 1. Open the `app.properties` file located in the following folder:
    ```bash
    {simple-java-app-yugabyte-cloud}/src/main/resources/app.properties
    ```
-2. Edit the file by configuring settings below:
+2. Edit the file by configuring the settings below:
    * `host` - the hostname of your Yugabyte Cloud instance.
    * `port` - the port number that will be used by the JDBC driver (the default is `5433`)
    * `dbUser` - the database username you used for your instance.
@@ -83,4 +83,7 @@ code:
 
 ## Questions or Issues?
 
-Send us a note in Slack 
+Having issues running this application or want to learn more from the expert who build and use Yugabyte?
+
+Send a note to [our Slack channel](https://join.slack.com/t/yugabyte-db/shared_invite/zt-xbd652e9-3tN0N7UG0eLpsace4t1d2A),
+or raise a question on StackOverflow and tag the question with `yugabytedb`!
