@@ -60,15 +60,15 @@ Upon successful execution, the app prints out messages similar to the following:
 
 ```bash
 >>>> Successfully connected to Yugabyte Cloud.
->>>> Table DemoAccount already exists.
+>>>> Successfully created DemoAccount table.
 >>>> Selecting accounts:
-name = Jessica, age = 28, country = USA, balance = 9200
-name = John, age = 28, country = Canada, balance = 9800
+name = Jessica, age = 28, country = USA, balance = 10000
+name = John, age = 28, country = Canada, balance = 9000
 
 >>>> Transferred 800 between accounts.
 >>>> Selecting accounts:
-name = Jessica, age = 28, country = USA, balance = 8400
-name = John, age = 28, country = Canada, balance = 10600
+name = Jessica, age = 28, country = USA, balance = 9200
+name = John, age = 28, country = Canada, balance = 9800
 ```
 
 ## Explore App Logic
