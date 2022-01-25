@@ -108,12 +108,22 @@ public class SampleApp {
     private static void transferMoneyBetweenAccounts(Connection conn, int amount) throws SQLException {
         Statement stmt = conn.createStatement();
 
-        stmt.execute(
-            "BEGIN TRANSACTION;" +
-                "UPDATE " + TABLE_NAME + " SET balance = balance - " + amount + "" + " WHERE name = 'Jessica';" +
-                "UPDATE " + TABLE_NAME + " SET balance = balance + " + amount + "" + " WHERE name = 'John';" +
-                "COMMIT;"
-        );
+        try {
+            stmt.execute(
+                "BEGIN TRANSACTION;" +
+                    "UPDATE " + TABLE_NAME + " SET balance = balance - " + amount + "" + " WHERE name = 'Jessica';" +
+                    "UPDATE " + TABLE_NAME + " SET balance = balance + " + amount + "" + " WHERE name = 'John';" +
+                    "COMMIT;"
+            );
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 40001) {
+                // The operation aborted due to a concurrent transaction trying to modify the same set of rows
+                // Consider adding retry logic for production-grade applications.
+                e.printStackTrace();
+            } else {
+                throw e;
+            }
+        }
 
         System.out.println();
         System.out.println(">>>> Transferred " + amount + " between accounts.");

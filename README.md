@@ -15,6 +15,12 @@ Unless you already have a cluster in Yugabyte Cloud, follow this simple
 [Quick Start Guide](https://docs.yugabyte.com/latest/yugabyte-cloud/cloud-quickstart/qs-add/) to provision a free
 instance for this app and future experiments.
 
+## Add Your Machine to IP allow list
+
+The application will be running on your local laptop/machine and you need to add an IP address of the machine to the
+[IP allow list](https://docs.yugabyte.com/latest/yugabyte-cloud/cloud-secure-clusters/add-connections/#manage-ip-allow-lists)
+for your cluster instance. 
+
 ## Clone App From GitHub
 
 Clone this app on your machine:
