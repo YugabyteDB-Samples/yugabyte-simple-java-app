@@ -117,7 +117,7 @@ public class SampleApp {
             );
         } catch (SQLException e) {
             if (e.getErrorCode() == 40001) {
-                // The operation aborted due to a concurrent transaction trying to modify the same set of rows
+                // The operation aborted due to a concurrent transaction trying to modify the same set of rows.
                 // Consider adding retry logic for production-grade applications.
                 e.printStackTrace();
             } else {
