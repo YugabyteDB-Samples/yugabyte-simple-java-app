@@ -21,7 +21,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Locale;
 import java.util.Properties;
+import jdk.internal.joptsimple.internal.Strings;
 
 public class SampleApp {
     private static final String TABLE_NAME = "DemoAccount";
@@ -43,9 +45,15 @@ public class SampleApp {
             + settings.getProperty("port") + "/yugabyte");
         ds.setUser(settings.getProperty("dbUser"));
         ds.setPassword(settings.getProperty("dbPassword"));
-        ds.setSsl(true);
-        ds.setSslMode("verify-full");
-        ds.setSslRootCert(settings.getProperty("sslRootCert"));
+
+        String sslMode = settings.getProperty("sslMode");
+        if (!Strings.isNullOrEmpty(sslMode) && !sslMode.equalsIgnoreCase("disable")) {
+            ds.setSsl(true);
+            ds.setSslMode(sslMode);
+
+            if(!Strings.isNullOrEmpty(settings.getProperty("sslRootCert")))
+                ds.setSslRootCert(settings.getProperty("sslRootCert"));
+        }
 
         try {
             Connection conn = ds.getConnection();
