@@ -36,7 +36,7 @@ git clone https://github.com/yugabyte/yugabyte-simple-java-app.git
 The application needs to establish a secured connection to your Yugabyte Cloud instance. To do that:
 1. Open the `app.properties` file located in the following folder:
    ```bash
-   {simple-java-app-yugabyte-cloud}/src/main/resources/app.properties
+   {yugabyte-simple-java-app}/src/main/resources/app.properties
    ```
 2. Edit the file by configuring the settings below:
    * `host` - the hostname of your Yugabyte Cloud instance.
@@ -54,7 +54,7 @@ Note, you can easily find all required settings through the Yugabyte Cloud UI:
 
 1. Open a command line and navigate to the root directory of the project
     ```bash
-   cd {location of the simple-java-app-yugabyte-cloud}
+   cd {location of the yugabyte-simple-java-app}
     ```
 2. Build the app with Maven:
     ```bash
@@ -84,7 +84,7 @@ name = John, age = 28, country = Canada, balance = 9800
 
 Congrats! You successfully executed a simple Java app that works with Yugabyte Cloud. Now, let's look into the source 
 code: 
-1. Open the `SampleApp.java` located under the `simple-java-app-yugabyte-cloud/src/main/java/SampleApp.java` folder.
+1. Open the `SampleApp.java` located under the `yugabyte-simple-java-app/src/main/java/SampleApp.java` folder.
 2. Check the `main` method that establishes a connection with your cloud instance via the topology-aware JDBC driver.
 3. Look into the `createDatabase` method that uses Postgres-compliant DDL commands to create a sample database.
 4. Check the `selectAccounts` method that queries your distributed data with so familiar SQL `SELECT` statement.
