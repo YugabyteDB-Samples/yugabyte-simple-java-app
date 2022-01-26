@@ -62,7 +62,7 @@ Note, you can easily find all required settings through the Yugabyte Cloud UI:
     ```
 3. Run the app:
     ```bash
-    java -cp target/simple-java-app-yugabyte-cloud-1.0-SNAPSHOT.jar SampleApp
+    java -cp target/yugabyte-simple-java-app-1.0-SNAPSHOT.jar SampleApp
     ```
 
 Upon successful execution, the app prints out messages similar to the following:
