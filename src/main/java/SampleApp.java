@@ -21,9 +21,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Locale;
 import java.util.Properties;
-import jdk.internal.joptsimple.internal.Strings;
 
 public class SampleApp {
     private static final String TABLE_NAME = "DemoAccount";
@@ -47,17 +45,17 @@ public class SampleApp {
         ds.setPassword(settings.getProperty("dbPassword"));
 
         String sslMode = settings.getProperty("sslMode");
-        if (!Strings.isNullOrEmpty(sslMode) && !sslMode.equalsIgnoreCase("disable")) {
+        if (!sslMode.isEmpty() && !sslMode.equalsIgnoreCase("disable")) {
             ds.setSsl(true);
             ds.setSslMode(sslMode);
 
-            if(!Strings.isNullOrEmpty(settings.getProperty("sslRootCert")))
+            if(!settings.getProperty("sslRootCert").isEmpty())
                 ds.setSslRootCert(settings.getProperty("sslRootCert"));
         }
 
         try {
             Connection conn = ds.getConnection();
-            System.out.println(">>>> Successfully connected to Yugabyte Cloud.");
+            System.out.println(">>>> Successfully connected to YugabyteDB!");
 
             createDatabase(conn);
 

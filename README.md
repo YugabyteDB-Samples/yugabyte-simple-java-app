@@ -1,8 +1,9 @@
-# Simple Java Application for Yugabyte Cloud
+# Simple Java Application for YugabyteDB
 
-The application connects to your [Yugabyte Cloud](https://cloud.yugabyte.com/) instance through the 
+The application connects to your YugabyteDB instance through the 
 [topology-aware JDBC driver](https://docs.yugabyte.com/latest/integrations/jdbc-driver/) and performs basic SQL 
-operations. Use the application as a template to get things started with Yugabyte Cloud in Java.
+operations. The instructions below are provided for [Yugabyte Cloud](https://cloud.yugabyte.com/) deployments. 
+If you are running YugabyteDB on your premises, then update the `/src/main/resources/app.properties` with connectivity settings.
 
 ## Prerequisite
 * Java Development Kit, version 8 or later
@@ -41,6 +42,7 @@ The application needs to establish a secured connection to your Yugabyte Cloud i
    * `port` - the port number that will be used by the JDBC driver (the default is `5433`)
    * `dbUser` - the database username you used for your instance.
    * `dbPassword` - the database password.
+   * `sslMode` - the SSL mode. Set to `verify-full` for Yugabyte Cloud deployments.
    * `sslRootCert` - a full path to your CA root cert (for example, `/Users/dmagda/certificates/root.crt`) 
 
 Note, you can easily find all required settings through the Yugabyte Cloud UI:
@@ -65,7 +67,7 @@ Note, you can easily find all required settings through the Yugabyte Cloud UI:
 Upon successful execution, the app prints out messages similar to the following:
 
 ```bash
->>>> Successfully connected to Yugabyte Cloud.
+>>>> Successfully connected to YugabyteDB!
 >>>> Successfully created DemoAccount table.
 >>>> Selecting accounts:
 name = Jessica, age = 28, country = USA, balance = 10000
