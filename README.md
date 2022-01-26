@@ -3,7 +3,8 @@
 The application connects to your YugabyteDB instance through the 
 [topology-aware JDBC driver](https://docs.yugabyte.com/latest/integrations/jdbc-driver/) and performs basic SQL 
 operations. The instructions below are provided for [Yugabyte Cloud](https://cloud.yugabyte.com/) deployments. 
-If you are running YugabyteDB on your premises, then update the `/src/main/resources/app.properties` with connectivity settings.
+If you are running YugabyteDB on your premises, then update the `/src/main/resources/app.properties` file with 
+connectivity settings.
 
 ## Prerequisite
 * Java Development Kit, version 8 or later
