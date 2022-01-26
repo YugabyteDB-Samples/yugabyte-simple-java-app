@@ -28,7 +28,7 @@ for your cluster instance.
 Clone this app on your machine:
 
 ```bash
-git clone https://github.com/yugabyte/simple-java-app-yugabyte-cloud.git
+git clone https://github.com/yugabyte/yugabyte-simple-java-app.git
 ```
 
 ## Provide Yugabyte Cloud Settings

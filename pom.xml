@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.yugabyte.demos</groupId>
-    <artifactId>simple-java-app-yugabyte-cloud</artifactId>
+    <artifactId>yugabyte-simple-java-app</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>
