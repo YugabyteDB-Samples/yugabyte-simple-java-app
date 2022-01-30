@@ -71,17 +71,9 @@ public class SampleApp {
     private static void createDatabase(Connection conn) throws SQLException {
         Statement stmt = conn.createStatement();
 
-        DatabaseMetaData meta = conn.getMetaData();
+        stmt.execute("DROP TABLE IF EXISTS " + TABLE_NAME);
 
-        ResultSet resultSet = meta.getTables(null, null, TABLE_NAME.toLowerCase(),
-            new String[] {"TABLE"});
-
-        if (resultSet.next()) {
-            System.out.println(">>>> Table " + TABLE_NAME + " already exists.");
-            return;
-        }
-
-        stmt.execute("CREATE TABLE IF NOT EXISTS " + TABLE_NAME +
+        stmt.execute("CREATE TABLE " + TABLE_NAME +
             "(" +
             "id int PRIMARY KEY," +
             "name varchar," +
@@ -123,7 +115,7 @@ public class SampleApp {
             );
         } catch (SQLException e) {
             if (e.getErrorCode() == 40001) {
-                // The operation aborted due to a concurrent transaction trying to modify the same set of rows.
+                // The operation is aborted due to a concurrent transaction that is modifying the same set of rows.
                 // Consider adding retry logic for production-grade applications.
                 e.printStackTrace();
             } else {

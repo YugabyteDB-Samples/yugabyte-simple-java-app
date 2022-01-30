@@ -1,10 +1,9 @@
 # Simple Java Application for YugabyteDB
 
-The application connects to your YugabyteDB instance through the 
+The application connects to your YugabyteDB instance via 
 [topology-aware JDBC driver](https://docs.yugabyte.com/latest/integrations/jdbc-driver/) and performs basic SQL 
-operations. The instructions below are provided for [Yugabyte Cloud](https://cloud.yugabyte.com/) deployments. 
-If you are running YugabyteDB on your premises, then update the `/src/main/resources/app.properties` file with 
-connectivity settings.
+operations. The instructions below are provided for [Yugabyte Cloud](https://cloud.yugabyte.com/) deployments.
+If you use a different type of deployment, then update the `/src/main/resources/app.properties` file with proper connection parameters.
 
 ## Prerequisite
 * Java Development Kit, version 8 or later
@@ -13,59 +12,45 @@ connectivity settings.
 
 ## Start Yugabyte Cloud Cluster
 
-Unless you already have a cluster in Yugabyte Cloud, follow this simple 
-[Quick Start Guide](https://docs.yugabyte.com/latest/yugabyte-cloud/cloud-quickstart/qs-add/) to provision a free
-instance for this app and future experiments.
-
-## Add Your Machine to IP allow list
-
-The application will be running on your local laptop/machine and you need to add an IP address of the machine to the
-[IP allow list](https://docs.yugabyte.com/latest/yugabyte-cloud/cloud-secure-clusters/add-connections/#manage-ip-allow-lists)
-for your cluster instance. 
+* [Start YugabyteDB Cloud](https://docs.yugabyte.com/latest/yugabyte-cloud/cloud-quickstart/qs-add/) instance. Free tier exists.
+* Add an IP address of your machine/laptop to the [IP allow list](https://docs.yugabyte.com/latest/yugabyte-cloud/cloud-secure-clusters/add-connections/#manage-ip-allow-lists)
 
 ## Clone App From GitHub
 
-Clone this app on your machine:
+Clone the application to your machine:
 
 ```bash
-git clone https://github.com/yugabyte/yugabyte-simple-java-app.git
+git clone https://github.com/yugabyte/yugabyte-simple-java-app.git && cd yugabyte-simple-java-app
 ```
 
-## Provide Yugabyte Cloud Settings
+## Provide Yugabyte Cloud Connection Parameters
 
-The application needs to establish a secured connection to your Yugabyte Cloud instance. To do that:
-1. Open the `app.properties` file located in the following folder:
-   ```bash
-   {yugabyte-simple-java-app}/src/main/resources/app.properties
-   ```
-2. Edit the file by configuring the settings below:
-   * `host` - the hostname of your Yugabyte Cloud instance.
-   * `port` - the port number that will be used by the JDBC driver (the default is `5433`)
-   * `dbUser` - the database username you used for your instance.
-   * `dbPassword` - the database password.
-   * `sslMode` - the SSL mode. Set to `verify-full` for Yugabyte Cloud deployments.
-   * `sslRootCert` - a full path to your CA root cert (for example, `/Users/dmagda/certificates/root.crt`) 
+The application needs to establish a secured connection to your Yugabyte Cloud instance.
 
-Note, you can easily find all required settings through the Yugabyte Cloud UI:
+Open the `app.properties` file and specify the following configuration parameters:
+* `host` - the hostname of your Yugabyte Cloud instance.
+* `port` - the port number that will be used by the JDBC driver (the default is `5433`)
+* `dbUser` - the database username you used for your instance.
+* `dbPassword` - the database password.
+* `sslMode` - the SSL mode. Set to `verify-full` for Yugabyte Cloud deployments.
+* `sslRootCert` - a full path to your CA root cert (for example, `/Users/dmagda/certificates/root.crt`) 
+
+Note, you can easily find all the settings on the Yugabyte Cloud dashboard:
 
 ![image](src/main/resources/cloud_app_settings.png)
 
 ## Build and Run App
 
-1. Open a command line and navigate to the root directory of the project
-    ```bash
-   cd {location of the yugabyte-simple-java-app}
-    ```
-2. Build the app with Maven:
+1. Build the app with Maven:
     ```bash
     mvn clean package
     ```
-3. Run the app:
+2Run the app:
     ```bash
     java -cp target/yugabyte-simple-java-app-1.0-SNAPSHOT.jar SampleApp
     ```
 
-Upon successful execution, the app prints out messages similar to the following:
+Upon successful execution, you will see output similar to the following:
 
 ```bash
 >>>> Successfully connected to YugabyteDB!
@@ -82,13 +67,13 @@ name = John, age = 28, country = Canada, balance = 9800
 
 ## Explore App Logic
 
-Congrats! You successfully executed a simple Java app that works with Yugabyte Cloud. Now, let's look into the source 
-code: 
-1. Open the `SampleApp.java` located under the `yugabyte-simple-java-app/src/main/java/SampleApp.java` folder.
-2. Check the `main` method that establishes a connection with your cloud instance via the topology-aware JDBC driver.
-3. Look into the `createDatabase` method that uses Postgres-compliant DDL commands to create a sample database.
-4. Check the `selectAccounts` method that queries your distributed data with so familiar SQL `SELECT` statement.
-5. Explore the `transferMoneyBetweenAccounts` method that updates your data consistently with distributed transactions.
+Congrats! You successfully executed a simple Java app that works with Yugabyte Cloud.
+
+Now, explore the source code of `SampleApp.java` file:
+1. `main` method - establishes a connection with your cloud instance via Go PostgreSQL driver.
+3. `createDatabase` method - creates a table and populates it with sample data.
+4. `selectAccounts` method - queries the data with SQL `SELECT` statements.
+5. `transferMoneyBetweenAccounts` method - updates records consistently with distributed transactions.
 
 ## Questions or Issues?
 
