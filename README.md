@@ -45,7 +45,7 @@ Note, you can easily find all the settings on the Yugabyte Cloud dashboard:
     ```bash
     mvn clean package
     ```
-2Run the app:
+2. Run the app:
     ```bash
     java -cp target/yugabyte-simple-java-app-1.0-SNAPSHOT.jar SampleApp
     ```
