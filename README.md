@@ -69,7 +69,7 @@ name = John, age = 28, country = Canada, balance = 9800
 
 Congrats! You successfully executed a simple Java app that works with Yugabyte Cloud.
 
-Now, explore the source code of `SampleApp.java` file:
+Now, explore the source code of the `SampleApp.java` file:
 1. `main` method - establishes a connection with your cloud instance via Go PostgreSQL driver.
 3. `createDatabase` method - creates a table and populates it with sample data.
 4. `selectAccounts` method - queries the data with SQL `SELECT` statements.
