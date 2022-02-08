@@ -77,7 +77,7 @@ Now, explore the source code of the `SampleApp.java` file:
 
 ## Questions or Issues?
 
-Having issues running this application or want to learn more from the expert who build and use Yugabyte?
+Having issues running this application or want to learn more from Yugabyte experts?
 
-Send a note to [our Slack channel](https://join.slack.com/t/yugabyte-db/shared_invite/zt-xbd652e9-3tN0N7UG0eLpsace4t1d2A),
+Join [our Slack channel](https://communityinviter.com/apps/yugabyte-db/register),
 or raise a question on StackOverflow and tag the question with `yugabytedb`!
