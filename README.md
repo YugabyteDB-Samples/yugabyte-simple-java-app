@@ -2,7 +2,7 @@
 
 The application connects to your YugabyteDB instance via 
 [topology-aware JDBC driver](https://docs.yugabyte.com/latest/integrations/jdbc-driver/) and performs basic SQL 
-operations. The instructions below are provided for [Yugabyte Cloud](https://cloud.yugabyte.com/) deployments.
+operations. The instructions below are provided for [YugabyteDB Managed](https://cloud.yugabyte.com/) deployments.
 If you use a different type of deployment, then update the `/src/main/resources/app.properties` file with proper connection parameters.
 
 ## Prerequisite
@@ -10,9 +10,9 @@ If you use a different type of deployment, then update the `/src/main/resources/
 * Maven 3.0 or later
 * Command line tool or your favourite IDE, such as IntelliJ IDEA, or Eclipse.
 
-## Start Yugabyte Cloud Cluster
+## Start YugabyteDB Managed Cluster
 
-* [Start YugabyteDB Cloud](https://docs.yugabyte.com/latest/yugabyte-cloud/cloud-quickstart/qs-add/) instance. Free tier exists.
+* [Start YugabyteDB Managed](https://docs.yugabyte.com/latest/yugabyte-cloud/cloud-quickstart/qs-add/) instance. Free tier exists.
 * Add an IP address of your machine/laptop to the [IP allow list](https://docs.yugabyte.com/latest/yugabyte-cloud/cloud-secure-clusters/add-connections/#manage-ip-allow-lists)
 
 ## Clone App From GitHub
@@ -23,19 +23,19 @@ Clone the application to your machine:
 git clone https://github.com/yugabyte/yugabyte-simple-java-app.git && cd yugabyte-simple-java-app
 ```
 
-## Provide Yugabyte Cloud Connection Parameters
+## Provide Cluster Connection Parameters
 
-The application needs to establish a secured connection to your Yugabyte Cloud instance.
+The application needs to establish a secured connection to your YugabyteDB Managed instance.
 
 Open the `app.properties` file and specify the following configuration parameters:
-* `host` - the hostname of your Yugabyte Cloud instance.
+* `host` - the hostname of your cluster instance.
 * `port` - the port number that will be used by the JDBC driver (the default is `5433`)
 * `dbUser` - the database username you used for your instance.
 * `dbPassword` - the database password.
-* `sslMode` - the SSL mode. Set to `verify-full` for Yugabyte Cloud deployments.
+* `sslMode` - the SSL mode. Set to `verify-full` for YugabyteDB Managed deployments.
 * `sslRootCert` - a full path to your CA root cert (for example, `/Users/dmagda/certificates/root.crt`) 
 
-Note, you can easily find all the settings on the Yugabyte Cloud dashboard:
+Note, you can easily find all the settings on the YugabyteDB Managed dashboard:
 
 ![image](src/main/resources/cloud_app_settings.png)
 
@@ -67,13 +67,13 @@ name = John, age = 28, country = Canada, balance = 9800
 
 ## Explore App Logic
 
-Congrats! You successfully executed a simple Java app that works with Yugabyte Cloud.
+Congrats! You successfully executed a simple Java app that works with YugabyteDB.
 
 Now, explore the source code of the `SampleApp.java` file:
-1. `main` method - establishes a connection with your cloud instance via Go PostgreSQL driver.
-3. `createDatabase` method - creates a table and populates it with sample data.
-4. `selectAccounts` method - queries the data with SQL `SELECT` statements.
-5. `transferMoneyBetweenAccounts` method - updates records consistently with distributed transactions.
+1. `main` method - establishes a connection with your cloud instance via JDBC driver.
+2. `createDatabase` method - creates a table and populates it with sample data.
+3. `selectAccounts` method - queries the data with SQL `SELECT` statements.
+4. `transferMoneyBetweenAccounts` method - updates records consistently with distributed transactions.
 
 ## Questions or Issues?
 
