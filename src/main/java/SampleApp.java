@@ -1,3 +1,4 @@
+
 /**
  Copyright 2022 Yugabyte
 
@@ -17,7 +18,6 @@
 import com.yugabyte.ysql.YBClusterAwareDataSource;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -31,8 +31,7 @@ public class SampleApp {
         Properties settings = new Properties();
         try {
             settings.load(SampleApp.class.getResourceAsStream("app.properties"));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return;
         }
@@ -40,7 +39,7 @@ public class SampleApp {
         YBClusterAwareDataSource ds = new YBClusterAwareDataSource();
 
         ds.setUrl("jdbc:yugabytedb://" + settings.getProperty("host") + ":"
-            + settings.getProperty("port") + "/yugabyte");
+                + settings.getProperty("port") + "/yugabyte");
         ds.setUser(settings.getProperty("dbUser"));
         ds.setPassword(settings.getProperty("dbPassword"));
 
@@ -49,7 +48,7 @@ public class SampleApp {
             ds.setSsl(true);
             ds.setSslMode(sslMode);
 
-            if(!settings.getProperty("sslRootCert").isEmpty())
+            if (!settings.getProperty("sslRootCert").isEmpty())
                 ds.setSslRootCert(settings.getProperty("sslRootCert"));
         }
 
@@ -62,8 +61,7 @@ public class SampleApp {
             selectAccounts(conn);
             transferMoneyBetweenAccounts(conn, 800);
             selectAccounts(conn);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -74,17 +72,17 @@ public class SampleApp {
         stmt.execute("DROP TABLE IF EXISTS " + TABLE_NAME);
 
         stmt.execute("CREATE TABLE " + TABLE_NAME +
-            "(" +
-            "id int PRIMARY KEY," +
-            "name varchar," +
-            "age int," +
-            "country varchar," +
-            "balance int" +
-            ")");
+                "(" +
+                "id int PRIMARY KEY," +
+                "name varchar," +
+                "age int," +
+                "country varchar," +
+                "balance int" +
+                ")");
 
         stmt.execute("INSERT INTO " + TABLE_NAME + " VALUES" +
-            "(1, 'Jessica', 28, 'USA', 10000)," +
-            "(2, 'John', 28, 'Canada', 9000)");
+                "(1, 'Jessica', 28, 'USA', 10000)," +
+                "(2, 'John', 28, 'Canada', 9000)");
 
         System.out.println(">>>> Successfully created " + TABLE_NAME + " table.");
     }
@@ -98,8 +96,8 @@ public class SampleApp {
 
         while (rs.next()) {
             System.out.println(String.format("name = %s, age = %s, country = %s, balance = %s",
-                rs.getString(2), rs.getString(3),
-                rs.getString(4), rs.getString(5)));
+                    rs.getString(2), rs.getString(3),
+                    rs.getString(4), rs.getString(5)));
         }
     }
 
@@ -108,15 +106,16 @@ public class SampleApp {
 
         try {
             stmt.execute(
-                "BEGIN TRANSACTION;" +
-                    "UPDATE " + TABLE_NAME + " SET balance = balance - " + amount + "" + " WHERE name = 'Jessica';" +
-                    "UPDATE " + TABLE_NAME + " SET balance = balance + " + amount + "" + " WHERE name = 'John';" +
-                    "COMMIT;"
-            );
+                    "BEGIN TRANSACTION;" +
+                            "UPDATE " + TABLE_NAME + " SET balance = balance - " + amount + ""
+                            + " WHERE name = 'Jessica';" +
+                            "UPDATE " + TABLE_NAME + " SET balance = balance + " + amount + "" + " WHERE name = 'John';"
+                            +
+                            "COMMIT;");
         } catch (SQLException e) {
             if (e.getSQLState().equals("40001")) {
                 System.err.println("The operation is aborted due to a concurrent transaction that is" +
-                    " modifying the same set of rows. Consider adding retry logic for production-grade applications.");
+                        " modifying the same set of rows. Consider adding retry logic for production-grade applications.");
                 e.printStackTrace();
             } else {
                 throw e;
