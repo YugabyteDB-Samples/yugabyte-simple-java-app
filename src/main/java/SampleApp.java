@@ -115,7 +115,7 @@ public class SampleApp {
         } catch (SQLException e) {
             if (e.getSQLState().equals("40001")) {
                 System.err.println("The operation is aborted due to a concurrent transaction that is" +
-                        " modifying the same set of rows. Consider adding retry logic for production-grade applications.");
+                        " modifying the same set of rows. Consider adding retry logic or using the pessimistic locking.");
                 e.printStackTrace();
             } else {
                 throw e;
