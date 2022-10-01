@@ -1,59 +1,31 @@
 
 /**
- Copyright 2022 Yugabyte
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ * Copyright 2022 Yugabyte
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import com.yugabyte.ysql.YBClusterAwareDataSource;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
 
 public class SampleApp {
     private static final String TABLE_NAME = "DemoAccount";
 
     public static void main(String[] args) {
-
-        Properties settings = new Properties();
         try {
-            settings.load(SampleApp.class.getResourceAsStream("app.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        YBClusterAwareDataSource ds = new YBClusterAwareDataSource();
-
-        ds.setUrl("jdbc:yugabytedb://" + settings.getProperty("host") + ":"
-                + settings.getProperty("port") + "/yugabyte");
-        ds.setUser(settings.getProperty("dbUser"));
-        ds.setPassword(settings.getProperty("dbPassword"));
-
-        String sslMode = settings.getProperty("sslMode");
-        if (!sslMode.isEmpty() && !sslMode.equalsIgnoreCase("disable")) {
-            ds.setSsl(true);
-            ds.setSslMode(sslMode);
-
-            if (!settings.getProperty("sslRootCert").isEmpty())
-                ds.setSslRootCert(settings.getProperty("sslRootCert"));
-        }
-
-        try {
-            Connection conn = ds.getConnection();
+            Connection conn = DataSource.getConnection();
             System.out.println(">>>> Successfully connected to YugabyteDB!");
 
             createDatabase(conn);
