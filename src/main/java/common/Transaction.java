@@ -1,10 +1,6 @@
 package common;
 
-import java.sql.Time;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Timer;
+import java.sql.Connection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,24 +14,32 @@ public abstract class Transaction {
     TransactionType transactionType;
     long startTimeStamp;
 
-    public void execute() {
+    public void execute(Connection conn) {
         beforeActuallyExecute();
-        actuallyExecute();
+        actuallyExecute(conn);
         postActuallyExecute();
     }
 
     protected void beforeActuallyExecute() {
         startTimeStamp = System.currentTimeMillis();
-        System.out.printf("Transaction begins");
+        System.out.printf("Transaction begins\n");
     }
 
-    protected void actuallyExecute() {
+    protected void actuallyExecute(Connection conn) {
 
     }
 
     protected void postActuallyExecute() {
         long endTimeStamp = System.currentTimeMillis();
-        long minitues = TimeUnit.MICROSECONDS.toMinutes(endTimeStamp - startTimeStamp);
-        System.out.printf("%s completes,takes %d minitues",transactionType,minitues);
+        long seconds = TimeUnit.MICROSECONDS.toSeconds(endTimeStamp - startTimeStamp);
+        System.out.printf("%s completes,takes %d seconds\n",transactionType, seconds);
+    }
+
+    public TransactionType getTransactionType() {
+        return transactionType;
+    }
+
+    public void setTransactionType(TransactionType transactionType) {
+        this.transactionType = transactionType;
     }
 }

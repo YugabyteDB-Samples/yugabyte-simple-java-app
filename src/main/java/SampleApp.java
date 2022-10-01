@@ -17,6 +17,7 @@
 
 import common.Transaction;
 import common.TransactionType;
+import common.transactionImpl.NewOrderTransaction;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,29 +37,35 @@ public class SampleApp {
 //        try {
 //            conn = DataSource.getConnection();
 //            System.out.println(">>>> Successfully connected to YugabyteDB!");
-//
-//            createDatabase(conn);
-//
-//            selectAccounts(conn);
-//            transferMoneyBetweenAccounts(conn, 800);
-//            selectAccounts(conn);
+////            selectAccounts(conn);
+////            transferMoneyBetweenAccounts(conn, 800);
+////            selectAccounts(conn);
 //        } catch (SQLException e) {
 //            e.printStackTrace();
 //        }
-        // 1. read file, construct requests
+        // 0. Create DB, insert data.
+//        try {
+//            createDatabase(conn);
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+
+        // 1. read construct requests
         List<Transaction> list = null;
         try {
             list = readFile();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        System.out.printf("Get %d order in list\n",list.size());
+
         // 2. execute and report
-        executeCommands(list);
+        ExecuteManager manager = new ExecuteManager();
+        manager.executeCommands(conn, list);
+        manager.report();
     }
 
-    private static void executeCommands(List<Transaction> list) {
-        if (list == null) return;
-    }
+
 
     private static List<Transaction> readFile() throws FileNotFoundException {
         String inputFileName = "src/main/resources/xact_files/0.txt";
@@ -110,8 +117,37 @@ public class SampleApp {
         return null;
     }
 
+    /*
+    New Order Transaction consists of M+1 lines, where M denote the number of items in the new order.
+    The first line consists of five comma-separated values: N,C ID,W ID,D ID,M.
+    Each of the M remaining lines specifies an item in the order and consists of three comma- separated values: OL I ID,OL SUPPLY W ID,OL QUANTITY.
+     */
     private static Transaction assembleNewOrderTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        NewOrderTransaction newOrderTransaction = new NewOrderTransaction();
+        int C_ID = Integer.parseInt(firstLine[1]);
+        int W_ID = Integer.parseInt(firstLine[2]);
+        int D_ID = Integer.parseInt(firstLine[3]);
+        int M = Integer.parseInt(firstLine[4]);
+        List<Integer> items = new ArrayList<>();
+        List<Integer> suppliers = new ArrayList<>();
+        List<Integer> quanties = new ArrayList<>();
+        for (int i = 0; i < M; i++) {
+            String[] strs = scanner.nextLine().split(",");
+            int OL_I_ID = Integer.parseInt(strs[0]);
+            int OL_SUPPLY_W_ID = Integer.parseInt(strs[1]);
+            int OL_QUANTITY = Integer.parseInt(strs[2]);
+            items.add(OL_I_ID);
+            suppliers.add(OL_SUPPLY_W_ID);
+            quanties.add(OL_QUANTITY);
+        }
+        newOrderTransaction.setTransactionType(TransactionType.NEW_ORDER);
+        newOrderTransaction.setC_ID(C_ID);
+        newOrderTransaction.setD_ID(D_ID);
+        newOrderTransaction.setW_ID(W_ID);
+        newOrderTransaction.setItems(items);
+        newOrderTransaction.setQuantities(quanties);
+        newOrderTransaction.setSupplierWarehouses(suppliers);
+        return newOrderTransaction;
     }
 
     private static Transaction assembleDeliveryTransaction(String[] firstLine, Scanner scanner) {
