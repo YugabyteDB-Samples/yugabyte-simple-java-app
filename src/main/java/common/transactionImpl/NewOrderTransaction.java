@@ -21,6 +21,7 @@ public class NewOrderTransaction extends Transaction {
 
     @Override
     protected void actuallyExecute(Connection conn) {
+        // 具体处理逻辑
     }
 
     public int getW_ID() {

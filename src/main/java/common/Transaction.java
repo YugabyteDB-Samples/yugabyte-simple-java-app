@@ -22,7 +22,7 @@ public abstract class Transaction {
 
     protected void beforeActuallyExecute() {
         startTimeStamp = System.currentTimeMillis();
-//        System.out.printf("Transaction begins\n");
+        System.out.printf("Transaction begins\n");
     }
 
     protected void actuallyExecute(Connection conn) {

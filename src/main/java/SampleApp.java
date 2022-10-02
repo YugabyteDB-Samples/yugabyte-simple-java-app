@@ -34,32 +34,24 @@ public class SampleApp {
     private static Connection conn;
 
     public static void main(String[] args) {
-//        try {
-//            conn = DataSource.getConnection();
-//            System.out.println(">>>> Successfully connected to YugabyteDB!");
-////            selectAccounts(conn);
-////            transferMoneyBetweenAccounts(conn, 800);
-////            selectAccounts(conn);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-        // 0. Create DB, insert data.
-//        try {
-//            createDatabase(conn);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
+        // 1. Establish a DB connection
+        try {
+            conn = DataSource.getConnection();
+            System.out.println(">>>> Successfully connected to YugabyteDB!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (conn == null) return;
 
-        // 1. read construct requests
+        // 2. Construct requests from files.
         List<Transaction> list = null;
         try {
             list = readFile();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        System.out.printf("Get %d order in list\n",list.size());
 
-        // 2. execute and report
+        // 3. execute and report
         ExecuteManager manager = new ExecuteManager();
         manager.executeCommands(conn, list);
         manager.report();
@@ -94,6 +86,7 @@ public class SampleApp {
             }
             if (transaction != null) list.add(transaction);
         }
+        System.out.printf("Read {%d} orders from file={%s}\n",list.size(),inputFileName);
         return list;
     }
 
