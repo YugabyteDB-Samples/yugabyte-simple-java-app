@@ -1,69 +1,154 @@
 
 /**
- Copyright 2022 Yugabyte
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+ * Copyright 2022 Yugabyte
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import com.yugabyte.ysql.YBClusterAwareDataSource;
-import java.io.IOException;
+import common.Transaction;
+import common.TransactionType;
+import common.transactionImpl.NewOrderTransaction;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class SampleApp {
     private static final String TABLE_NAME = "DemoAccount";
+    private static Connection conn;
 
     public static void main(String[] args) {
-
-        Properties settings = new Properties();
+        // 1. Establish a DB connection
         try {
-            settings.load(SampleApp.class.getResourceAsStream("app.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        YBClusterAwareDataSource ds = new YBClusterAwareDataSource();
-
-        ds.setUrl("jdbc:yugabytedb://" + settings.getProperty("host") + ":"
-                + settings.getProperty("port") + "/yugabyte");
-        ds.setUser(settings.getProperty("dbUser"));
-        ds.setPassword(settings.getProperty("dbPassword"));
-
-        String sslMode = settings.getProperty("sslMode");
-        if (!sslMode.isEmpty() && !sslMode.equalsIgnoreCase("disable")) {
-            ds.setSsl(true);
-            ds.setSslMode(sslMode);
-
-            if (!settings.getProperty("sslRootCert").isEmpty())
-                ds.setSslRootCert(settings.getProperty("sslRootCert"));
-        }
-
-        try {
-            Connection conn = ds.getConnection();
+            conn = DataSource.getConnection();
             System.out.println(">>>> Successfully connected to YugabyteDB!");
-
-            createDatabase(conn);
-
-            selectAccounts(conn);
-            transferMoneyBetweenAccounts(conn, 800);
-            selectAccounts(conn);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        if (conn == null) return;
+
+        // 2. Construct requests from files.
+        List<Transaction> list = null;
+        try {
+            list = readFile();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // 3. execute and report
+        ExecuteManager manager = new ExecuteManager();
+        manager.executeCommands(conn, list);
+        manager.report();
+    }
+
+
+
+    private static List<Transaction> readFile() throws FileNotFoundException {
+        String inputFileName = "src/main/resources/xact_files/0.txt";
+        Scanner scanner = new Scanner(new File(inputFileName));
+        List<Transaction> list = new ArrayList<>();
+        while (scanner.hasNextLine()) {
+            String[] firstLine = scanner.nextLine().split(",");
+            String type = firstLine[0];
+            Transaction transaction = null;
+            if (type.equals(TransactionType.PAYMENT.type)) {
+                transaction = assemblePaymentTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.DELIVERY.type)) {
+                transaction = assembleDeliveryTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.NEW_ORDER.type)) {
+                transaction = assembleNewOrderTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.ORDER_STATUS.type)) {
+                transaction = assembleOrderStatusTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.STOCK_LEVEL.type)) {
+                transaction = assembleStockLevelTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.POPULAR_ITEM.type)) {
+                transaction = assemblePopularItemTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.TOP_BALANCE.type)) {
+                transaction = assembleTopBalanceTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.RELATED_CUSTOMER.type)) {
+                transaction = assembleRelatedCustomerTransaction(firstLine, scanner);
+            }
+            if (transaction != null) list.add(transaction);
+        }
+        System.out.printf("Read {%d} orders from file={%s}\n",list.size(),inputFileName);
+        return list;
+    }
+
+    private static Transaction assembleRelatedCustomerTransaction(String[] firstLine, Scanner scanner) {
+        return null;
+    }
+
+    private static Transaction assembleTopBalanceTransaction(String[] firstLine, Scanner scanner) {
+        return null;
+    }
+
+    private static Transaction assemblePopularItemTransaction(String[] firstLine, Scanner scanner) {
+        return null;
+    }
+
+    private static Transaction assembleStockLevelTransaction(String[] firstLine, Scanner scanner) {
+        return null;
+    }
+
+    private static Transaction assembleOrderStatusTransaction(String[] firstLine, Scanner scanner) {
+        return null;
+    }
+
+    /*
+    New Order Transaction consists of M+1 lines, where M denote the number of items in the new order.
+    The first line consists of five comma-separated values: N,C ID,W ID,D ID,M.
+    Each of the M remaining lines specifies an item in the order and consists of three comma- separated values: OL I ID,OL SUPPLY W ID,OL QUANTITY.
+     */
+    private static Transaction assembleNewOrderTransaction(String[] firstLine, Scanner scanner) {
+        NewOrderTransaction newOrderTransaction = new NewOrderTransaction();
+        int C_ID = Integer.parseInt(firstLine[1]);
+        int W_ID = Integer.parseInt(firstLine[2]);
+        int D_ID = Integer.parseInt(firstLine[3]);
+        int M = Integer.parseInt(firstLine[4]);
+        List<Integer> items = new ArrayList<>();
+        List<Integer> suppliers = new ArrayList<>();
+        List<Integer> quanties = new ArrayList<>();
+        for (int i = 0; i < M; i++) {
+            String[] strs = scanner.nextLine().split(",");
+            int OL_I_ID = Integer.parseInt(strs[0]);
+            int OL_SUPPLY_W_ID = Integer.parseInt(strs[1]);
+            int OL_QUANTITY = Integer.parseInt(strs[2]);
+            items.add(OL_I_ID);
+            suppliers.add(OL_SUPPLY_W_ID);
+            quanties.add(OL_QUANTITY);
+        }
+        newOrderTransaction.setTransactionType(TransactionType.NEW_ORDER);
+        newOrderTransaction.setC_ID(C_ID);
+        newOrderTransaction.setD_ID(D_ID);
+        newOrderTransaction.setW_ID(W_ID);
+        newOrderTransaction.setItems(items);
+        newOrderTransaction.setQuantities(quanties);
+        newOrderTransaction.setSupplierWarehouses(suppliers);
+        return newOrderTransaction;
+    }
+
+    private static Transaction assembleDeliveryTransaction(String[] firstLine, Scanner scanner) {
+        return null;
+    }
+
+    private static Transaction assemblePaymentTransaction(String[] firstLine, Scanner scanner) {
+        return null;
     }
 
     private static void createDatabase(Connection conn) throws SQLException {
