@@ -19,6 +19,7 @@ import common.Transaction;
 import common.TransactionType;
 import common.transactionImpl.NewOrderTransaction;
 import common.transactionImpl.OrderStatusTransaction;
+import common.transactionImpl.StockLevelTransaction;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -104,7 +105,14 @@ public class SampleApp {
     }
 
     private static Transaction assembleStockLevelTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        int W_ID = Integer.parseInt(firstLine[1]);
+        int D_ID = Integer.parseInt(firstLine[2]);
+        int T = Integer.parseInt(firstLine[3]);
+        int L = Integer.parseInt(firstLine[4]);
+        StockLevelTransaction stockLevelTransaction = new StockLevelTransaction(W_ID,D_ID,T,L);
+        stockLevelTransaction.setTransactionType(TransactionType.STOCK_LEVEL);
+//        System.out.println("add a stock level trans");
+        return stockLevelTransaction;
     }
 
     private static Transaction assembleOrderStatusTransaction(String[] firstLine, Scanner scanner) {
