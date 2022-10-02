@@ -18,6 +18,7 @@
 import common.Transaction;
 import common.TransactionType;
 import common.transactionImpl.NewOrderTransaction;
+import common.transactionImpl.OrderStatusTransaction;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,13 +36,13 @@ public class SampleApp {
 
     public static void main(String[] args) {
         // 1. Establish a DB connection
-        try {
-            conn = DataSource.getConnection();
-            System.out.println(">>>> Successfully connected to YugabyteDB!");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        if (conn == null) return;
+//        try {
+//            conn = DataSource.getConnection();
+//            System.out.println(">>>> Successfully connected to YugabyteDB!");
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        if (conn == null) return;
 
         // 2. Construct requests from files.
         List<Transaction> list = null;
@@ -107,7 +108,13 @@ public class SampleApp {
     }
 
     private static Transaction assembleOrderStatusTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        int C_W_ID = Integer.parseInt(firstLine[1]);
+        int C_D_ID = Integer.parseInt(firstLine[2]);
+        int C_ID = Integer.parseInt(firstLine[3]);
+        OrderStatusTransaction orderStatusTransaction = new OrderStatusTransaction(C_W_ID,C_D_ID,C_ID);
+        orderStatusTransaction.setTransactionType(TransactionType.ORDER_STATUS);
+//        System.out.println("add a order status trans");
+        return orderStatusTransaction;
     }
 
     /*
