@@ -23,7 +23,7 @@ public class DeliveryTransaction extends Transaction {
         return CARRIER_ID;
     }
 
-    public void setCARRIER_ID(int carrrier_ID) {
-        CARRIER_ID = carrrier_ID;
+    public void setCARRIER_ID(int carrier_ID) {
+        CARRIER_ID = carrier_ID;
     }
 }
