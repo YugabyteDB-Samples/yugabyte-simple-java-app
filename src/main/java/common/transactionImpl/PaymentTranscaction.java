@@ -10,10 +10,11 @@ public class PaymentTransaction extends Transaction {
     int C_D_ID;
     int C_ID;
     float PAYMENT;
-//     @Override
-//     protected void actuallyExecute(Connection conn) {
 
-//     }
+    @Override
+    protected void actuallyExecute(Connection conn) {
+
+    }
 
     public int getC_W_ID() {
         return C_W_ID;
@@ -49,7 +50,7 @@ public class PaymentTransaction extends Transaction {
 
     @Override
     public String toString() {
-        return "PaymentTranscaction{" +
+        return "PaymentTransaction{" +
                 "C_W_ID=" + C_W_ID +
                 ", C_D_ID=" + C_D_ID +
                 ", C_ID=" + C_ID +
