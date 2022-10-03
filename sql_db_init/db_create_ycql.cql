@@ -1,5 +1,5 @@
 
-DROP DATABASE IF EXISTS DBYSQL5424;
+DROP DATABASE IF EXISTS dbysql5424;
 CREATE DATABASE dbysql5424;
 -- show all tables
 -- \dt;
@@ -7,6 +7,8 @@ CREATE DATABASE dbysql5424;
 -- USE dbysql5424J; MySQL 
 \c dbysql5424;
 
+-- cql支持，键空间是一个定义节点上数据复制的命名空间。集群每个节点包含一个键空间，是否可以优化
+-- cql的type, 似乎没有char
 
 --  5 entity tables --
 CREATE TABLE warehouse (
@@ -90,8 +92,8 @@ CREATE TABLE "order" (
   -- Note: as compound foreign key
   UNIQUE(O_W_id, O_D_id, O_C_id),
 
-  -- The range of O CARRIER ID is [1,10]: use smallint
-  O_carrier_id smallint, -- data has lots of null
+  -- The range of O CARRIER ID is [1,10]: use smallint is 16 bit in CQL, tinyint is 8
+  O_carrier_id tinyint, -- data has lots of null
   O_OL_cnt decimal(2,0) NOT NULL,
   O_all_local decimal(1,0) NOT NULL,
   O_entry_d timestamp NOT NULL
