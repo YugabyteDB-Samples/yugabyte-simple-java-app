@@ -170,7 +170,17 @@ public class SampleApp {
     }
 
     private static Transaction assemblePaymentTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        PaymentTransaction paymentTransaction = new PaymentTransaction();
+        int C_W_ID = Integer.parseInt(firstLine[1]);
+        int C_D_ID = Integer.parseInt(firstLine[2]);
+        int C_ID = Integer.parseInt(firstLine[3]);
+        float PAYMENT = Float.parseFloat(firstLine[4]);
+        paymentTransaction.setTransactionType(TransactionType.PAYMENT);
+        paymentTransaction.setC_ID(C_ID);
+        paymentTransaction.setC_D_ID(C_D_ID);
+        paymentTransaction.setC_W_ID(C_W_ID);
+        paymentTransaction.set_PAYMENT(PAYMENT);
+        return paymentTransaction;
     }
 
     private static void createDatabase(Connection conn) throws SQLException {
