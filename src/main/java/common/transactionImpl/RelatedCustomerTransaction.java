@@ -9,10 +9,10 @@ public class RelatedCustomerTransaction extends Transaction {
     int C_D_ID;
     int C_ID;
 
-//     @Override
-//     protected void actuallyExecute(Connection conn) {
+    @Override
+    protected void actuallyExecute(Connection conn) {
 
-//     }
+    }
 
     public int getC_W_ID() {
         return C_W_ID;
