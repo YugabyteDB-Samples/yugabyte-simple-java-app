@@ -11,9 +11,9 @@ public class PaymentTransaction extends Transaction {
     int C_ID;
     float PAYMENT;
     @Override
-    protected void actuallyExecute(Connection conn) {
+//     protected void actuallyExecute(Connection conn) {
 
-    }
+//     }
 
     public int getC_W_ID() {
         return C_W_ID;
