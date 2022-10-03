@@ -10,7 +10,7 @@ public class PaymentTransaction extends Transaction {
     int C_D_ID;
     int C_ID;
     float PAYMENT;
-    @Override
+//     @Override
 //     protected void actuallyExecute(Connection conn) {
 
 //     }
