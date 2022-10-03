@@ -91,7 +91,15 @@ public class SampleApp {
     }
 
     private static Transaction assembleRelatedCustomerTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        int C_W_ID = Integer.parseInt(firstLine[1]);
+        int C_D_ID = Integer.parseInt(firstLine[2]);
+        int C_ID = Integer.parseInt(firstLine[3]);
+        RelatedCustomerTransaction relatedCustomerTransaction = new RelatedCustomerTransaction();
+        relatedCustomerTransaction.setTransactionType(TransactionType.RELATED_CUSTOMER);
+        relatedCustomerTransaction.setC_W_ID(C_W_ID);
+        relatedCustomerTransaction.setC_D_ID(C_D_ID);
+        relatedCustomerTransaction.setC_ID(C_ID);
+        return relatedCustomerTransaction;
     }
 
     private static Transaction assembleTopBalanceTransaction(String[] firstLine, Scanner scanner) {
@@ -164,9 +172,15 @@ public class SampleApp {
         newOrderTransaction.setSupplierWarehouses(suppliers);
         return newOrderTransaction;
     }
-
+    
     private static Transaction assembleDeliveryTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        DeliveryTransaction deliveryTransaction = new DeliveryTransaction();
+        int W_ID = Integer.parseInt(firstLine[1]);
+        int CARRIER_ID = Integer.parseInt(firstLine[2]);
+        deliveryTransaction.setTransactionType(TransactionType.DELIVERY);
+        deliveryTransaction.setW_ID(W_ID);
+        deliveryTransaction.setCARRIER_ID(CARRIER_ID);
+        return deliveryTransaction;
     }
 
     private static Transaction assemblePaymentTransaction(String[] firstLine, Scanner scanner) {
