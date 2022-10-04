@@ -22,9 +22,8 @@ public class OrderStatusTransaction extends Transaction {
     protected void actuallyExecute(Connection conn) {
         String sql1 = String.format("select distinct C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from Customer where C_W_ID = %d, and C_D_ID = %d and C_ID = %d", C_W_ID, C_D_ID, C_ID);
         String sql2 = String.format("select O_ID, O_ENTRY_D, O_CARRIER_ID from (select *, row_number()over(partition by O_W_ID, O_D_ID, O_C_ID order by O_ENTRY_D desc) as rank from Order where O_W_ID = %d and O_D_ID = %d and O_C_ID = %d) t where rank = 1", C_W_ID, C_D_ID, C_ID);
-        Statement stmt = null;
         try {
-            stmt = conn.createStatement();
+            Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql1);
             while (rs.next()) {
                 int C_FIRST = rs.getInt(1);
@@ -55,7 +54,6 @@ public class OrderStatusTransaction extends Transaction {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        if (stmt == null) throw new RuntimeException("Statement is null");
     }
 
     public OrderStatusTransaction(int c_W_ID, int c_D_ID, int c_ID) {

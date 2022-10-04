@@ -3,6 +3,9 @@ package common.transactionImpl;
 import common.Transaction;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * @Package common.transactionImpl
@@ -25,7 +28,17 @@ public class StockLevelTransaction extends Transaction {
 
     @Override
     protected void actuallyExecute(Connection conn) {
-        super.actuallyExecute(conn);
+        String sql = String.format("with last_l_ol_orders as( select * from ( select *, rank()over(partition by OL_W_ID, C_D_ID order by OL_O_ID desc) as rank from OrderLine where OL_W_ID = %d and C_D_ID = %d ) t where rank < = %d ) select count(distinct S_I_ID) as item_cnt from last_l_ol_orders t1 left join Stock t2 on t1.OL_W_ID = t2.S_W_ID and t1.OL_I_ID = t2.S_I_ID where S_QUANTITY < %d", W_ID,D_ID,L,T);
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                int cnt = rs.getInt(1);
+                System.out.println(cnt);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getW_ID() {
