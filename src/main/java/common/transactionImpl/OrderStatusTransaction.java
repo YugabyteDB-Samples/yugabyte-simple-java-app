@@ -30,7 +30,7 @@ public class OrderStatusTransaction extends Transaction {
                 int C_MIDDLE = rs.getInt(2);
                 int C_LAST = rs.getInt(3);
                 int C_BALANCE = rs.getInt(4);
-                System.out.printf("%d,%d,%d,%d", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE);
+                System.out.printf("%d,%d,%d,%d\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE);
             }
 
             // get O_ID
@@ -48,7 +48,7 @@ public class OrderStatusTransaction extends Transaction {
                     int OL_QUANTITY = tmp.getInt(3);
                     int OL_AMOUNT = tmp.getInt(4);
                     int OL_DELIVERY_D = tmp.getInt(5);
-                    System.out.printf("%d,%d,%d,%d,%d",OL_I_ID,OL_SUPPLY_W_ID,OL_QUANTITY,OL_AMOUNT,OL_DELIVERY_D);
+                    System.out.printf("%d,%d,%d,%d,%d\n",OL_I_ID,OL_SUPPLY_W_ID,OL_QUANTITY,OL_AMOUNT,OL_DELIVERY_D);
                 }
             }
         } catch (SQLException e) {
