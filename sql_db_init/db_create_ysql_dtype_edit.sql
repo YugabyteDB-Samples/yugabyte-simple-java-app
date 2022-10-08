@@ -1,6 +1,6 @@
 
-DROP DATABASE IF EXISTS dbysql5424;
-CREATE DATABASE dbysql5424;
+DROP DATABASE IF EXISTS dbysql;
+CREATE DATABASE dbysql;
 -- show all tables
 -- \dt;
 
@@ -11,17 +11,20 @@ CREATE DATABASE dbysql5424;
 --  5 entity tables --
 DROP TABLE if EXISTS warehouse CASCADE;
 CREATE TABLE warehouse (
-  W_id int NOT NULL,
+  -- to small int
+  W_id smallint NOT NULL,
   W_name varchar(10) NOT NULL,
   W_street_1 varchar(20) NOT NULL,
   W_street_2 varchar(20) NOT NULL,
   W_city varchar(20) NOT NULL,
   W_state char(2) NOT NULL,
+  -- 定长数字，考虑 int 4 byte? 暂时先不动，因为要改sql 做match时是 char和int的不一样
   W_zip char(9) NOT NULL,
+  -- W_zip int NOT NULL,
   W_tax decimal(4,4) NOT NULL,
   W_ytd decimal(12,2) NOT NULL,
   
-  PRIMARY KEY(W_id HASH) -- yugabyte distrbuted table sharding
+  PRIMARY KEY(W_id) -- yugabyte distrbuted table sharding
 );
 
 -- insert from csv
@@ -31,8 +34,9 @@ CREATE TABLE warehouse (
 DROP TABLE if EXISTS district CASCADE;
 CREATE TABLE district (
   -- D W ID is a foreign key that refers to warehouse table.
-  D_W_id int NOT NULL REFERENCES warehouse(W_id),
-  D_id int NOT NULL,
+  D_W_id smallint NOT NULL REFERENCES warehouse(W_id),
+  -- 1-10
+  D_id smallint NOT NULL,
   -- Note: as compound foreign key
   PRIMARY KEY((D_W_id, D_id) HASH), -- yugabyte distrbuted table sharding
 
@@ -41,10 +45,12 @@ CREATE TABLE district (
   D_street_2 varchar(20) NOT NULL,
   D_city varchar(20) NOT NULL,
   D_state char(2) NOT NULL,
+  -- 定长数字，考虑 int 4 byte? 暂时先不动，因为要改sql 做match时是 char和int的不一样
   D_zip char(9) NOT NULL,
+  -- D_zip char(9) NOT NULL,
   D_tax decimal(4,4) NOT NULL,
   D_ytd decimal(12,2) NOT NULL,
-  D_next_O_id int NOT NULL
+  D_next_O_id int NOT NULL -- 先不动，目前只有3001，不知道会增加到什么程度
 );
 
 \copy district from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/district.csv' WITH (FORMAT CSV, NULL 'null');
