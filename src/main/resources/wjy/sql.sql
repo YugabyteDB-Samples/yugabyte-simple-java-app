@@ -1,16 +1,11 @@
 -- YSQL
--- 1. New Order Transaction
--- 4. Order-Status Transaction (已修改)
--- 5. Stock-Level Transaction (已修改)
--- 6. Popular-Item Transaction
--- 7. Top-Balance Transaction (已修改)
+-- 1. New Order Transaction (准备做)
+-- 4. Order-Status Transaction (需修改)
+-- 5. Stock-Level Transaction (需修改 - 用v1)
+-- 6. Popular-Item Transaction (准备做 - 用v1)
+-- 7. Top-Balance Transaction (已修改 - 用v1)
 
 -- 1. New Order Transaction 
-
--- 创建订单信息临时表 new_order_info
-create table 
-    new_order_info
-    (NO_O_ID, NO_N, NO_W_ID, NO_D_ID, NO_C_ID, NO_I_ID, NO_SUPPLY_W_ID, NO_QUANTITY primary key (NO_O_ID, NO_N))
 
 -- step1,2
 update 
@@ -20,8 +15,22 @@ set
 where 
     D_W_ID = 'W_ID'
     and D_ID = 'D_ID'
+-- return(returning) D_NEXT_O_ID
 
-'N' = D_NEXT_O_ID (最新的)
+select
+    D_NEXT_O_ID
+from 
+    District
+where 
+    D_W_ID = 'W_ID'
+    and D_ID = 'D_ID'
+
+'N' = D_NEXT_O_ID --(最新的)
+
+-- 创建订单信息临时表 new_order_info
+create table 
+    new_order_info
+    (NO_O_ID, NO_N, NO_W_ID, NO_D_ID, NO_C_ID, NO_I_ID, NO_SUPPLY_W_ID, NO_QUANTITY primary key (NO_O_ID, NO_N))
 
 -- for (int i = 1; i <= 'NUM_ITEMS'; i++)
 insert into 
@@ -89,7 +98,15 @@ left join
 on 
     t1.NO_I_ID = t3.I_ID
 
-TOTAL_AMOUNT += ITEM_AMOUNT or OL_AMOUNT
+-- 结束循环
+select 
+    sum(OL_AMOUNT) as TOTAL_AMOUNT
+from 
+    OrderLine
+where
+    OL_O_ID = 'N',
+    OL_D_ID = 'D_ID', 
+    OL_W_ID = 'W_ID'
 
 -- step6
 select 
@@ -115,10 +132,14 @@ where
 
 TOTAL_AMOUNT = TOTAL_AMOUNT * (1+ D_TAX +W_TAX) * (1 - C_DISCOUNT)
 
+-- get result
+
+
+
 drop table 
     new_order_info
 
--- 4. Order-Status Transaction (已修改)
+-- 4. Order-Status Transaction (需修改)
 select
     C_FIRST,
     C_MIDDLE,
@@ -131,7 +152,7 @@ where
     and C_D_ID = 'C_D_ID'
     and C_ID = 'C_ID'
 ;
-
+-- 修改部分%%
 select 
     O_ID,
     O_ENTRY_D,
@@ -143,9 +164,9 @@ where
     and O_D_ID = 'C_D_ID'
     and O_C_ID = 'C_ID'
 order by
-    O_ENTRY_D desc
+    O_ID desc
 limit 1
-
+--%%
 -- 拿到'O_ID'
 
 select 
@@ -162,9 +183,20 @@ where
     OL_O_ID = 'O_ID'
 ;
 
--- 5. Stock-Level Transaction (已修改)
+-- 5. Stock-Level Transaction (需修改 - 用v1)
 
 -- version 1 (无中间值)
+--修改部分%%
+select 
+    D_NEXT_O_ID
+from 
+    District
+where
+    D_W_ID = 'W_ID'
+    and D_ID = 'D_ID'
+
+-- 得到 N =  D_NEXT_O_ID + 1
+
 with last_l_ol_orders as(
     select 
         *
@@ -173,11 +205,10 @@ with last_l_ol_orders as(
     where 
         OL_W_ID = 'W_ID'
         and OL_D_ID = 'D_ID'
-    order by 
-        OL_O_ID desc
-    limit 'L'
+        and OL_O_ID >= 'N'-'L'
+        and OL_O_ID < 'N'
 )
-
+--%%
 select 
     count(distinct S_I_ID) as item_cnt
 from
@@ -191,7 +222,6 @@ where
     S_QUANTITY < 'T'
 
 -- version 2 (有中间值)
-
 select 
     *
 from 
@@ -214,7 +244,7 @@ where
     and S_I_ID in 'IL'
     and S_QUANTITY < 'T'
 
--- 6. Popular-Item Transaction
+-- 6. Popular-Item Transaction (准备做)
 
 -- version 1 (无中间值)
 with last_l_orders as (
@@ -245,7 +275,7 @@ last_l_orders_items as (
         t1.O_W_ID = t2.OL_W_ID
         and t1.O_D_ID = t2.OL_D_ID
         and t1.O_ID = t2.OL_O_ID
-) t 
+)
 
 select 
     t1.O_ID,
@@ -254,7 +284,7 @@ select
     t2.C_MIDDLE,
     t2.C_LAST
 from 
-    last_l_orders_items t1
+    last_l_orders t1
 left join
     Customer t2
 on
@@ -376,9 +406,10 @@ on
 group by 
     t1.I_NAME
 
--- 7. Top-Balance Transaction (已修改)
+-- 7. Top-Balance Transaction (已修改 - 用v1)
 
 -- version 1 (无中间值)
+--修改部分%%
 with top_10_customers as(
     select 
         C_FIRST,
@@ -391,7 +422,7 @@ with top_10_customers as(
         C_BALANCE desc
     limit 10
 )
-
+--%%
 select 
     t1.C_FIRST,
     t1.C_MIDDLE,

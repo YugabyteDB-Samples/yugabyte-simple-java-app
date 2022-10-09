@@ -1,9 +1,9 @@
 -- YCQL
 -- 1. New Order Transaction
--- 4. Order-Status Transaction
--- 5. Stock-Level Transaction
--- 6. Popular-Item Transaction
--- 7. Top-Balance Transaction
+-- 4. Order-Status Transaction (finished)
+-- 5. Stock-Level Transaction (finished)
+-- 6. Popular-Item Transaction (finished)
+-- 7. Top-Balance Transaction (finished)
 
 -- 1. New Order Transaction
 
@@ -34,7 +34,7 @@ where
     and O_C_ID = 'C_ID'
 allow filtering
 order by
-    O_ENTRY_D desc
+    O_ID desc
 limit 1
 ;
 
@@ -66,7 +66,7 @@ where
 -- 得到 N =  D_NEXT_O_ID + 1
 
 select 
-    *
+    distinct OL_I_ID
 from 
     OrderLine
 where 
@@ -77,9 +77,9 @@ where
 allow filtering
 
 -- 得到最新L个订单中的item(OL_I_ID)集合IL
-
+-- num=0; for loop (OL_I_ID in IL) 
 select 
-    count(S_I_ID) as item_cnt
+    S_I_ID
 from
     Stock
 where
@@ -87,6 +87,7 @@ where
     and S_I_ID = 'OL_I_ID' --IL for loop
     and S_QUANTITY < 'T'
 allow filtering
+-- if not null: num += 1
 
 -- 6. Popular-Item Transaction
 
@@ -100,8 +101,10 @@ where
 
 -- 得到 N =  D_NEXT_O_ID + 1
 
-select 
-    *
+select
+    O_C_ID,
+    O_ID,
+    O_ENREY_D
 from 
     Orders
 where
@@ -111,9 +114,9 @@ where
     and O_ID < 'N'
 allow filtering
 
--- 得到最新L个订单的集合OL(OL_O_ID, OL_C_ID)
+-- 得到最新L个订单的集合OL1(O_ID, O_C_ID)
 -- 输出O_ID, O_ENREY_D
-
+--for loop OL_C_ID in (OL1)
 select 
     C_FIRST,
     C_MIDDLE,
@@ -123,9 +126,9 @@ from
 where 
     C_W_ID = 'W_ID'
     C_D_ID = 'D_ID'
-    C_ID = 'OL_C_ID' --OL for loop
+    C_ID = 'OL_C_ID' --OL1 for loop
 ;
-
+--for loop OL1_O_ID in (OL1)
 select
     OL_W_ID,
     OL_D_ID,
@@ -136,14 +139,14 @@ from
 where 
     OL_W_ID = 'W_ID'
     and OL_D_ID = 'D_ID'
-    and OL_O_ID = 'OL_O_ID' --OL for loop
+    and OL_O_ID = 'OL1_O_ID' --OL1 for loop
 group by 
     OL_W_ID,
     OL_D_ID,
     OL_O_ID
 
--- 得到最新L个订单的item集合IL(OL_I_ID, MAX_OL_QUANTITY)
-
+-- 得到最新L个订单的OL2(OL_O_ID, MAX_OL_QUANTITY)
+--OL2 for loop (OL2_O_ID)
 select 
     OL_W_ID,
     OL_D_ID,
@@ -155,9 +158,9 @@ where
     and OL_O_ID = 'OL_O_ID' --OL for loop
     and OL_QUANTITY = 'MAX_OL_QUANTITY'
 allow filtering
-
---得到最新L个订单的popular item集合ILP
-
+--输出结果
+--得到最新L个订单的popular item集合ILP(set)
+-- for loop (OL_I_ID in ILP)
 select 
     I_NAME
 from
@@ -176,10 +179,8 @@ where
     and OL_D_ID = 'D_ID'
     and OL_O_ID >= 'N'
     and OL_O_ID < 'N'-'L'
-    and OL_I_ID = 'OL_I_ID' -- ILP for loop (distinct)
+    and OL_I_ID = 'OL_I_ID' -- ILP for loop
 allow filtering
-
-
 
 -- 7. Top-Balance Transaction
 select 
@@ -195,19 +196,20 @@ order by
     C_BALANCE desc
 limit 10
 
--- 得到TOP10 customer的 W,D集合 W10, D10
-
+-- 输出结果
+-- 得到TOP10 customer的 W,D 集合set W10, D10
+-- for loop (C_W_ID in W10)
 select 
     W_NAME
 from 
     Warehouse
 where
-    W_ID in 'W10' --(for loop)
+    W_ID = 'C_W_ID' --(for loop)
 ;
-
+-- for loop (C_D_ID in D10)
 select 
     D_NAME
 from 
     District
 where
-    D_ID in 'D10' --(for loop)
+    D_ID = 'C_D_ID' --(for loop)
