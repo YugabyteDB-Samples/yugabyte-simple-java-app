@@ -136,7 +136,7 @@ public class SampleApp {
         int C_ID = Integer.parseInt(firstLine[3]);
         OrderStatusTransaction orderStatusTransaction = new OrderStatusTransaction(C_W_ID,C_D_ID,C_ID);
         orderStatusTransaction.setTransactionType(TransactionType.ORDER_STATUS);
-//        System.out.println("add a order status trans");
+        System.out.println("add a order status trans");
         return orderStatusTransaction;
     }
 
