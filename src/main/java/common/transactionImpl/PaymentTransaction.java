@@ -12,7 +12,7 @@ public class PaymentTransaction extends Transaction {
     float PAYMENT;
 
     @Override
-    protected void actuallyExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) {
 
     }
 

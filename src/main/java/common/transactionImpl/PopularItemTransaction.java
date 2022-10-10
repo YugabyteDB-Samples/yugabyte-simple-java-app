@@ -19,7 +19,7 @@ public class PopularItemTransaction extends Transaction {
     int L;
 
     @Override
-    protected void actuallyExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) {
         System.out.printf("W_ID=%d,D_ID=%d,L=%d\n",W_ID,D_ID,L);
         try {
             ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.PopularItemTransaction1.SQL, W_ID, D_ID, L));

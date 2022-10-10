@@ -11,14 +11,17 @@ import java.util.List;
  * @Date 1/10/22 5:28 PM
  */
 public class ExecuteManager {
-    public void executeCommands(Connection conn, List<Transaction> list) {
+    public void executeYSQLCommands(Connection conn, List<Transaction> list) {
         if (list == null) return;
-        int cnt = 0;
         for (Transaction transaction : list) {
-            if (!transaction.getTransactionType().equals(TransactionType.ORDER_STATUS)) continue;
-            if (cnt > 5) continue;
-            transaction.execute(conn);
-            cnt++;
+            transaction.executeYSQL(conn);
+        }
+    }
+
+    public void executeYCQLCommands(Connection conn, List<Transaction> list) {
+        if (list == null) return;
+        for (Transaction transaction : list) {
+            transaction.executeYCQL(conn);
         }
     }
 

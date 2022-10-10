@@ -14,9 +14,15 @@ public abstract class Transaction {
     TransactionType transactionType;
     long startTimeStamp;
 
-    public void execute(Connection conn) {
+    public void executeYSQL(Connection conn) {
         beforeActuallyExecute();
-        actuallyExecute(conn);
+        YSQLExecute(conn);
+        postActuallyExecute();
+    }
+
+    public void executeYCQL(Connection conn) {
+        beforeActuallyExecute();
+        YCQLExecute(conn);
         postActuallyExecute();
     }
 
@@ -25,7 +31,10 @@ public abstract class Transaction {
         System.out.printf(transactionType.type + " Transaction begins\n");
     }
 
-    protected void actuallyExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) {
+
+    }
+    protected void YCQLExecute(Connection conn) {
 
     }
 

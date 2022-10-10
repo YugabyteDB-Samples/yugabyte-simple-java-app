@@ -10,7 +10,7 @@ public class RelatedCustomerTransaction extends Transaction {
     int C_ID;
 
     @Override
-    protected void actuallyExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) {
 
     }
 

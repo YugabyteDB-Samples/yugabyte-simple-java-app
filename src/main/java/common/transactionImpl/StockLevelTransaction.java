@@ -28,7 +28,7 @@ public class StockLevelTransaction extends Transaction {
     }
 
     @Override
-    protected void actuallyExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) {
         try {
             ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction1.SQL, W_ID, D_ID));
             int D_NEXT_O_ID = -1;

@@ -2,7 +2,7 @@
 -- 1. New Order Transaction (准备做)
 -- 4. Order-Status Transaction (需修改;Done)
 -- 5. Stock-Level Transaction (需修改 - 用v1;Done)
--- 6. Popular-Item Transaction (准备做 - 用v1;Done) 需要讨论。
+-- 6. Popular-Item Transaction (准备做 - 用v1;Done)
 -- 7. Top-Balance Transaction (已修改 - 用v1;Done)
 
 -- 1. New Order Transaction 

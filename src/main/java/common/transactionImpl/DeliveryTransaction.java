@@ -7,9 +7,6 @@ import java.sql.Connection;
 public class DeliveryTransaction extends Transaction {
     int W_ID;
     int CARRIER_ID;
-    protected void actuallyExecute(Connection conn) {
-
-    }
 
     public int getW_ID() {
         return W_ID;

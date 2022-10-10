@@ -15,7 +15,7 @@ import java.sql.SQLException;
  */
 public class TopBalanceTransaction extends Transaction {
     @Override
-    protected void actuallyExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) {
         try {
             ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.TopBalanceTransaction1.SQL));
             while (rs.next()) {
