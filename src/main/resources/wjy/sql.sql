@@ -111,7 +111,7 @@ where
 -- step6
 select 
     W_TAX, 
-    D_TAX 
+    D_TAX,
     C_LAST, 
     C_CREDIT, 
     C_DISCOUNT
