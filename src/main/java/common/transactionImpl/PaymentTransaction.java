@@ -49,11 +49,6 @@ public class PaymentTransaction extends Transaction {
 //        }
     }
 
-    protected void cqlExecute(CqlSession session) {
-        ResultSet rs = session.execute(String.format("select * from Customer where C_ID = %d", 1));
-
-    }
-
     public int getC_W_ID() {
         return C_W_ID;
     }
