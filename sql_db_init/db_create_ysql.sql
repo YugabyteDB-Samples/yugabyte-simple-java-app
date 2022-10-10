@@ -1,11 +1,11 @@
 
-DROP DATABASE IF EXISTS dbysql5424;
-CREATE DATABASE dbysql5424;
+DROP DATABASE IF EXISTS dbysql;
+CREATE DATABASE dbysql;
 -- show all tables
 -- \dt;
 
 -- USE dbysql5424J; MySQL 
-\c dbysql5424;
+\c dbysql;
 
 
 --  5 entity tables --

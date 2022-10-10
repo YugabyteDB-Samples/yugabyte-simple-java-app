@@ -1,6 +1,14 @@
 
+-- /temp/project_data
 -- /Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase
 
+DROP TABLE IF EXISTS dbycql.warehouse;
+DROP TABLE IF EXISTS dbycql.district;
+DROP TABLE IF EXISTS dbycql.customer;
+DROP TABLE IF EXISTS dbycql.orders;
+DROP TABLE IF EXISTS dbycql.item;
+DROP TABLE IF EXISTS dbycql.order_line;
+DROP TABLE IF EXISTS dbycql.stock;
 DROP KEYSPACE IF EXISTS dbycql;
 
 -- data path: /Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/
@@ -22,7 +30,7 @@ USE dbycql;
 -- 似乎没有char
 
 --  5 entity tables --
-drop table if exists warehouse;
+-- drop table if exists warehouse;
 CREATE TABLE warehouse (
   -- 1-10, so ok in tinyint for [-128	127]
   W_id int, 
@@ -38,12 +46,11 @@ CREATE TABLE warehouse (
   W_ytd decimal
 );
 
--- insert from csv
 -- WITH NULL='null': set NULL='null' or whatever character you want for null value ...
 copy warehouse from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/warehouse.csv'
 WITH NULL='null';
 
-drop table if exists district;
+-- drop table if exists district;
 CREATE TABLE district (
   -- 1-10,
   D_W_id int,
@@ -66,7 +73,7 @@ CREATE TABLE district (
 copy district from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/district.csv' 
 WITH NULL='null';
 
-drop table if exists customer;
+-- drop table if exists customer;
 CREATE TABLE customer (
   -- combined (C W ID, C D ID) is a foreign key that refers to district table.
   C_W_id int,
@@ -100,7 +107,7 @@ WITH NULL='null';
 select count(*) as no_imported_rows from customer;
 
 -- Note: order is a keyword in SQL due to "order by"
-drop table if exists orders;
+-- drop table if exists orders;
 CREATE TABLE orders (
   -- (O W ID, O D ID, O C ID) is a foreign key that refers to customer table.
   O_W_id int,
@@ -123,7 +130,7 @@ select count(*) as row_imported_orders from orders where;
 -- select count(*) from orders where O_carrier_id == 'null';
 
 
-drop table if exists item;
+-- drop table if exists item;
 CREATE TABLE item (
   I_id int PRIMARY KEY,
   I_name varchar,
@@ -137,7 +144,7 @@ WITH NULL='null';
 select count(*) as no_imported_rows from item;
 
 -- 2 relationship tables -- 
-drop table if exists order_line;
+-- drop table if exists order_line;
 CREATE TABLE order_line (
   -- OL I ID is a foreign key that refers to item table.
   OL_W_id int, 
@@ -159,7 +166,7 @@ WITH NULL='null';
 select count(*) as no_imported_rows from order_line;
 
 
-drop table if exists stock;
+-- drop table if exists stock;
 CREATE TABLE stock (
   -- S I ID is a primary key that refers to item table. 
   -- S W ID is a cluster key that refers to warehouse table.
