@@ -1,6 +1,7 @@
 import common.Transaction;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * @Date 1/10/22 5:28 PM
  */
 public class ExecuteManager {
-    public void executeCommands(Connection conn, List<Transaction> list) {
+    public void executeCommands(Connection conn, List<Transaction> list) throws SQLException {
         if (list == null) return;
         for (Transaction transaction : list) {
             transaction.execute(conn);

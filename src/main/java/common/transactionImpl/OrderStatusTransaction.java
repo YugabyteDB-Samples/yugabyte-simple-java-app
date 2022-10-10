@@ -15,10 +15,10 @@ public class OrderStatusTransaction extends Transaction {
     int C_D_ID;
     int C_ID;
 
-    @Override
-    protected void actuallyExecute(Connection conn) {
-        super.actuallyExecute(conn);
-    }
+//    @Override
+//    protected void actuallyExecute(Connection conn) {
+//        super.actuallyExecute(conn);
+//    }
 
     public OrderStatusTransaction(int c_W_ID, int c_D_ID, int c_ID) {
         C_W_ID = c_W_ID;

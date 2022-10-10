@@ -22,11 +22,11 @@ public class StockLevelTransaction extends Transaction {
         T = t;
         L = l;
     }
-
-    @Override
-    protected void actuallyExecute(Connection conn) {
-        super.actuallyExecute(conn);
-    }
+//
+//    @Override
+//    protected void actuallyExecute(Connection conn) {
+//        super.actuallyExecute(conn);
+//    }
 
     public int getW_ID() {
         return W_ID;

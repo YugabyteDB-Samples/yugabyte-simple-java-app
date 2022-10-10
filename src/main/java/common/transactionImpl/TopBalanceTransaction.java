@@ -11,8 +11,8 @@ import java.sql.Connection;
  * @Date 2/10/22 11:36 AM
  */
 public class TopBalanceTransaction extends Transaction {
-    @Override
-    protected void actuallyExecute(Connection conn) {
-        super.actuallyExecute(conn);
-    }
+//    @Override
+//    protected void actuallyExecute(Connection conn) {
+//        super.actuallyExecute(conn);
+//    }
 }

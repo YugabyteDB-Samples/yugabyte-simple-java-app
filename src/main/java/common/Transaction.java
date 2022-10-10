@@ -1,6 +1,7 @@
 package common;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -14,7 +15,7 @@ public abstract class Transaction {
     TransactionType transactionType;
     long startTimeStamp;
 
-    public void execute(Connection conn) {
+    public void execute(Connection conn) throws SQLException {
         beforeActuallyExecute();
         actuallyExecute(conn);
         postActuallyExecute();
@@ -25,7 +26,7 @@ public abstract class Transaction {
 //        System.out.printf("Transaction begins\n");
     }
 
-    protected void actuallyExecute(Connection conn) {
+    protected void actuallyExecute(Connection conn) throws SQLException {
 
     }
 

@@ -21,6 +21,12 @@
             <artifactId>HikariCP</artifactId>
             <version>4.0.3</version>
         </dependency>
+        <!--Add new dependency by Zugl -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.18</version>
+        </dependency>
     </dependencies>
 
     <properties>
