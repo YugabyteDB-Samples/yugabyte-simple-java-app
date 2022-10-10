@@ -35,13 +35,13 @@ public class SampleApp {
 
     public static void main(String[] args) {
         // 1. Establish a DB connection
-//        try {
-//            conn = DataSource.getConnection();
-//            System.out.println(">>>> Successfully connected to YugabyteDB!");
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        if (conn == null) return;
+        try {
+            conn = DataSource.getConnection();
+            System.out.println(">>>> Successfully connected to YugabyteDB!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (conn == null) return;
 
         // 2. Construct requests from files.
         List<Transaction> list = null;
@@ -136,7 +136,7 @@ public class SampleApp {
         int C_ID = Integer.parseInt(firstLine[3]);
         OrderStatusTransaction orderStatusTransaction = new OrderStatusTransaction(C_W_ID,C_D_ID,C_ID);
         orderStatusTransaction.setTransactionType(TransactionType.ORDER_STATUS);
-//        System.out.println("add a order status trans");
+        System.out.println("add a order status trans");
         return orderStatusTransaction;
     }
 

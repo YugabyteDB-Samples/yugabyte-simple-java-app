@@ -1,9 +1,9 @@
 -- YSQL
 -- 1. New Order Transaction (准备做)
--- 4. Order-Status Transaction (需修改)
--- 5. Stock-Level Transaction (需修改 - 用v1)
--- 6. Popular-Item Transaction (准备做 - 用v1)
--- 7. Top-Balance Transaction (已修改 - 用v1)
+-- 4. Order-Status Transaction (需修改;Done)
+-- 5. Stock-Level Transaction (需修改 - 用v1;Done)
+-- 6. Popular-Item Transaction (准备做 - 用v1;Done) 需要讨论。
+-- 7. Top-Balance Transaction (已修改 - 用v1;Done)
 
 -- 1. New Order Transaction 
 
@@ -139,7 +139,7 @@ TOTAL_AMOUNT = TOTAL_AMOUNT * (1+ D_TAX +W_TAX) * (1 - C_DISCOUNT)
 drop table 
     new_order_info
 
--- 4. Order-Status Transaction (需修改)
+-- 4. Order-Status Transaction
 select
     C_FIRST,
     C_MIDDLE,
@@ -183,7 +183,7 @@ where
     OL_O_ID = 'O_ID'
 ;
 
--- 5. Stock-Level Transaction (需修改 - 用v1)
+-- 5. Stock-Level Transaction
 
 -- version 1 (无中间值)
 --修改部分%%
@@ -244,9 +244,10 @@ where
     and S_I_ID in 'IL'
     and S_QUANTITY < 'T'
 
--- 6. Popular-Item Transaction (准备做)
+-- 6. Popular-Item Transaction
 
 -- version 1 (无中间值)
+---- SQL1 start
 with last_l_orders as (
     select 
         *
@@ -292,8 +293,40 @@ on
     and t1.O_D_ID = t2.C_D_ID
     and t1.O_ID = t2.C_ID
 ;
+---- SQL1 end
 
-select 
+---- SQL2 start
+with last_l_orders as (
+    select
+        *
+    from
+        (select
+            *,
+            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank
+        from
+            Orders
+        where
+            O_W_ID = 'W_ID'
+            and O_D_ID = 'D_ID'
+        ) t
+    where rank <= 'L'
+),
+
+last_l_orders_items as (
+    select
+        *,
+        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank
+    from
+        last_l_orders t1
+    left join
+        OrderLine t2
+    on
+        t1.O_W_ID = t2.OL_W_ID
+        and t1.O_D_ID = t2.OL_D_ID
+        and t1.O_ID = t2.OL_O_ID
+)
+
+select
     t1.O_ID,
     t2.I_NAME,
     t1.OL_QUANTITY
@@ -308,8 +341,41 @@ where
 order by 
     t1.O_ID
 ;
+---- SQL2 end
 
-select 
+
+---- SQL3 start
+with last_l_orders as (
+    select
+        *
+    from
+        (select
+            *,
+            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank
+        from
+            Orders
+        where
+            O_W_ID = 'W_ID'
+            and O_D_ID = 'D_ID'
+        ) t
+    where rank <= 'L'
+),
+
+last_l_orders_items as (
+    select
+        *,
+        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank
+    from
+        last_l_orders t1
+    left join
+        OrderLine t2
+    on
+        t1.O_W_ID = t2.OL_W_ID
+        and t1.O_D_ID = t2.OL_D_ID
+        and t1.O_ID = t2.OL_O_ID
+)
+
+select
     t3.I_NAME,
     count(t2.OL_I_ID) / 'L' * 100 as I_Percentage
 from
@@ -325,6 +391,7 @@ on
 group by 
     t2.I_NAME
 ;
+---- SQL3 end
 
 -- version 2 (有中间值)
 
@@ -406,10 +473,9 @@ on
 group by 
     t1.I_NAME
 
--- 7. Top-Balance Transaction (已修改 - 用v1)
+-- 7. Top-Balance Transaction
 
 -- version 1 (无中间值)
---修改部分%%
 with top_10_customers as(
     select 
         C_FIRST,
@@ -422,8 +488,7 @@ with top_10_customers as(
         C_BALANCE desc
     limit 10
 )
---%%
-select 
+select
     t1.C_FIRST,
     t1.C_MIDDLE,
     t1.C_LAST,

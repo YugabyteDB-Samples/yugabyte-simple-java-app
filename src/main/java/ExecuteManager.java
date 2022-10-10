@@ -1,4 +1,5 @@
 import common.Transaction;
+import common.TransactionType;
 
 import java.sql.Connection;
 import java.util.List;
@@ -12,8 +13,12 @@ import java.util.List;
 public class ExecuteManager {
     public void executeCommands(Connection conn, List<Transaction> list) {
         if (list == null) return;
+        int cnt = 0;
         for (Transaction transaction : list) {
+            if (!transaction.getTransactionType().equals(TransactionType.ORDER_STATUS)) continue;
+            if (cnt > 5) continue;
             transaction.execute(conn);
+            cnt++;
         }
     }
 

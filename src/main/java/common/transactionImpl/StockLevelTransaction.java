@@ -1,5 +1,6 @@
 package common.transactionImpl;
 
+import common.SQLEnum;
 import common.Transaction;
 
 import java.sql.Connection;
@@ -28,13 +29,18 @@ public class StockLevelTransaction extends Transaction {
 
     @Override
     protected void actuallyExecute(Connection conn) {
-        String sql = String.format("with last_l_ol_orders as( select * from ( select *, rank()over(partition by OL_W_ID, C_D_ID order by OL_O_ID desc) as rank from OrderLine where OL_W_ID = %d and C_D_ID = %d ) t where rank < = %d ) select count(distinct S_I_ID) as item_cnt from last_l_ol_orders t1 left join Stock t2 on t1.OL_W_ID = t2.S_W_ID and t1.OL_I_ID = t2.S_I_ID where S_QUANTITY < %d", W_ID,D_ID,L,T);
         try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
+            ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction1.SQL, W_ID, D_ID));
+            int D_NEXT_O_ID = -1;
+            while (rs.next()) {
+                D_NEXT_O_ID = rs.getInt(1);
+                System.out.printf("D_NEXT_O_ID=%d\n",D_NEXT_O_ID);
+            }
+            int N = D_NEXT_O_ID + 1;
+            rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction2.SQL, W_ID, D_ID, N, L, N, T));
             while (rs.next()) {
                 int cnt = rs.getInt(1);
-                System.out.println(cnt);
+                System.out.printf("Count=%d\n",cnt);
             }
         } catch (SQLException e) {
             e.printStackTrace();
