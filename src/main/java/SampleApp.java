@@ -53,7 +53,7 @@ public class SampleApp {
 
         // 3. execute and report
         ExecuteManager manager = new ExecuteManager();
-        manager.executeCommands(conn, list);
+        manager.executeYSQLCommands(conn, list);
         manager.report();
     }
 
