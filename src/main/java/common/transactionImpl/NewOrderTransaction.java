@@ -20,7 +20,7 @@ public class NewOrderTransaction extends Transaction {
     List<Integer> quantities;
 
     @Override
-    protected void actuallyExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) {
         // 具体处理逻辑
     }
 

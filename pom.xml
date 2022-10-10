@@ -21,6 +21,15 @@
             <artifactId>HikariCP</artifactId>
             <version>4.0.3</version>
         </dependency>
+
+        <!-- YCQL: https://mvnrepository.com/artifact/com.yugabyte/java-driver-core -->
+        <dependency>
+            <groupId>com.yugabyte</groupId>
+            <artifactId>java-driver-core</artifactId>
+            <version>4.6.0-yb-11</version>
+        </dependency>
+
+
     </dependencies>
 
     <properties>

@@ -14,25 +14,34 @@ public abstract class Transaction {
     TransactionType transactionType;
     long startTimeStamp;
 
-    public void execute(Connection conn) {
+    public void executeYSQL(Connection conn) {
         beforeActuallyExecute();
-        actuallyExecute(conn);
+        YSQLExecute(conn);
+        postActuallyExecute();
+    }
+
+    public void executeYCQL(Connection conn) {
+        beforeActuallyExecute();
+        YCQLExecute(conn);
         postActuallyExecute();
     }
 
     protected void beforeActuallyExecute() {
         startTimeStamp = System.currentTimeMillis();
-//        System.out.printf("Transaction begins\n");
+        System.out.printf(transactionType.type + " Transaction begins\n");
     }
 
-    protected void actuallyExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) {
+
+    }
+    protected void YCQLExecute(Connection conn) {
 
     }
 
     protected void postActuallyExecute() {
         long endTimeStamp = System.currentTimeMillis();
         long seconds = TimeUnit.MICROSECONDS.toSeconds(endTimeStamp - startTimeStamp);
-//        System.out.printf("%s completes,takes %d seconds\n",transactionType, seconds);
+        System.out.printf("%s completes,takes %d seconds\n",transactionType, seconds);
     }
 
     public TransactionType getTransactionType() {
