@@ -1,18 +1,18 @@
 
-DROP DATABASE IF EXISTS dbysql5424;
-CREATE DATABASE dbysql5424;
+DROP DATABASE IF EXISTS dbysql;
+CREATE DATABASE dbysql;
 -- show all tables
 -- \dt;
 
 -- USE dbysql5424J; MySQL 
-\c dbysql5424;
+\c dbysql;
 
--- cql支持，键空间是一个定义节点上数据复制的命名空间。集群每个节点包含一个键空间，是否可以优化
--- cql的type, 似乎没有char
+-- data path: /temp/project_data/data_files/
 
 --  5 entity tables --
+DROP TABLE if EXISTS warehouse CASCADE;
 CREATE TABLE warehouse (
-  W_id int NOT NULL PRIMARY KEY,
+  W_id int NOT NULL,
   W_name varchar(10) NOT NULL,
   W_street_1 varchar(20) NOT NULL,
   W_street_2 varchar(20) NOT NULL,
@@ -20,19 +20,22 @@ CREATE TABLE warehouse (
   W_state char(2) NOT NULL,
   W_zip char(9) NOT NULL,
   W_tax decimal(4,4) NOT NULL,
-  W_ytd decimal(12,2) NOT NULL
+  W_ytd decimal(12,2) NOT NULL,
+  
+  PRIMARY KEY(W_id HASH) -- yugabyte distrbuted table sharding
 );
 
 -- insert from csv
-\copy warehouse from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/warehouse.csv' WITH (FORMAT CSV, NULL 'null');
+\copy warehouse from '/temp/project_data/data_files/warehouse.csv' WITH (FORMAT CSV, NULL 'null');
 
 
+DROP TABLE if EXISTS district CASCADE;
 CREATE TABLE district (
   -- D W ID is a foreign key that refers to warehouse table.
   D_W_id int NOT NULL REFERENCES warehouse(W_id),
   D_id int NOT NULL,
   -- Note: as compound foreign key
-  PRIMARY KEY(D_W_id, D_id),
+  PRIMARY KEY((D_W_id, D_id) HASH), -- yugabyte distrbuted table sharding
 
   D_name varchar(10) NOT NULL,
   D_street_1 varchar(20) NOT NULL,
@@ -45,9 +48,10 @@ CREATE TABLE district (
   D_next_O_id int NOT NULL
 );
 
-\copy district from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/district.csv' WITH (FORMAT CSV, NULL 'null');
+\copy district from '/temp/project_data/data_files/district.csv' WITH (FORMAT CSV, NULL 'null');
 
 
+DROP TABLE if EXISTS customer CASCADE;
 CREATE TABLE customer (
   -- combined (C W ID, C D ID) is a foreign key that refers to district table.
   C_W_id int NOT NULL,
@@ -55,7 +59,7 @@ CREATE TABLE customer (
   FOREIGN KEY (C_W_id, C_D_id) REFERENCES district(D_W_id, D_id),
   C_id int NOT NULL,
   -- Note: as compound foreign key
-  PRIMARY KEY(C_W_id, C_D_id, C_id),
+  PRIMARY KEY((C_W_id, C_D_id, C_id) HASH), -- yugabyte distrbuted table sharding
   
   C_first varchar(16) NOT NULL,
   C_middle char(2) NOT NULL,
@@ -77,52 +81,57 @@ CREATE TABLE customer (
   C_data varchar(500) NOT NULL);
 
 -- insert from csv
-\copy customer from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/customer.csv' WITH (FORMAT CSV, NULL 'null');
--- select count(*) from customer;
+\copy customer from '/temp/project_data/data_files/customer.csv' WITH (FORMAT CSV, NULL 'null');
+select count(*) as no_imported_rows from customer;
 
 -- Note: order is a keyword in SQL due to "order by"
-CREATE TABLE "order" (
+DROP TABLE if EXISTS orders CASCADE;
+CREATE TABLE orders (
   -- (O W ID, O D ID, O C ID) is a foreign key that refers to customer table.
   O_W_id int NOT NULL,
   O_D_id int NOT NULL,
   O_id int NOT NULL,
-  PRIMARY KEY(O_W_id, O_D_id, O_id),
+  PRIMARY KEY((O_W_id, O_D_id, O_id) HASH),
   O_C_id int NOT NULL,
   FOREIGN KEY (O_W_id, O_D_id, O_C_id) REFERENCES customer(C_W_id, C_D_id, C_id),
   -- Note: as compound foreign key
-  UNIQUE(O_W_id, O_D_id, O_C_id),
+  
 
-  -- The range of O CARRIER ID is [1,10]: use smallint is 16 bit in CQL, tinyint is 8
-  O_carrier_id tinyint, -- data has lots of null
+  -- The range of O CARRIER ID is [1,10]: use smallint in pgsql(but small int is 16 bit in CQL, tinyint is 8)
+  O_carrier_id smallint, -- data has lots of null
   O_OL_cnt decimal(2,0) NOT NULL,
   O_all_local decimal(1,0) NOT NULL,
   O_entry_d timestamp NOT NULL
 );
 
-\copy "order" from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/order.csv' WITH (FORMAT CSV, NULL 'null');
--- select count(*) from "order" where O_carrier_id is null;
+\copy orders from '/temp/project_data/data_files/order.csv' WITH (FORMAT CSV, NULL 'null');
+select count(*) as no_imported_rows from orders;
 
+DROP TABLE if EXISTS item CASCADE;
 CREATE TABLE item (
-  I_id int NOT NULL PRIMARY KEY,
+  I_id int NOT NULL,
+  PRIMARY KEY(I_id HASH),
   I_name varchar(24) NOT NULL,
   I_tax decimal(5,2) NOT NULL,
   I_im_id int NOT NULL,
   I_data varchar(50) NOT NULL
 );
-
 -- insert from csv
-\copy item from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/item.csv' WITH (FORMAT CSV, NULL 'null');
+\copy item from '/temp/project_data/data_files/item.csv' WITH (FORMAT CSV, NULL 'null');
+select count(*) as no_imported_rows from item;
 
 -- 2 relationship tables -- 
-CREATE TABLE order_line (
+DROP TABLE if EXISTS orderline CASCADE;
+CREATE TABLE orderline (
   -- (OL W ID, OL D ID, OL O ID) is a foreign key that refers to Order table. 
   -- OL I ID is a foreign key that refers to item table.
   OL_W_id int NOT NULL, 
   OL_D_id int NOT NULL, 
   OL_O_id int NOT NULL,
-  FOREIGN KEY (OL_W_id, OL_D_id, OL_O_id) REFERENCES "order"(O_W_id, O_D_id, O_id),
+  FOREIGN KEY (OL_W_id, OL_D_id, OL_O_id) REFERENCES orders(O_W_id, O_D_id, O_id),
   OL_number int NOT NULL,
-  PRIMARY KEY(OL_W_id, OL_D_id, OL_O_id, OL_number),
+  -- PRIMARY KEY(OL_W_id, OL_D_id, OL_O_id, OL_number),
+  PRIMARY KEY((OL_W_id, OL_D_id, OL_O_id, OL_number) HASH),
   OL_I_id int NOT NULL REFERENCES item(I_id),
   
   
@@ -133,15 +142,16 @@ CREATE TABLE order_line (
   OL_dist_info char(24) NOT NULL
 );
 
-\copy order_line from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/order-line.csv' WITH (FORMAT CSV, NULL 'null');
--- select * from "order_line" where OL_delivery_D is null;
+\copy orderline from '/temp/project_data/data_files/order-line.csv' WITH (FORMAT CSV, NULL 'null');
+select count(*) as no_imported_rows from "orderline";
 
+DROP TABLE if EXISTS stock CASCADE;
 CREATE TABLE stock (
   -- S I ID is a foreign key that refers to item table. 
   -- S W ID is a foreign key that refers to warehouse table.
   S_W_id int NOT NULL REFERENCES warehouse(W_id),
   S_I_id int NOT NULL REFERENCES item(I_id),
-  PRIMARY KEY(S_W_id, S_I_id),
+  PRIMARY KEY((S_W_id, S_I_id) HASH),
   
   S_quantity decimal(4,0) NOT NULL,
   S_ytd decimal(8,2) NOT NULL,
@@ -161,7 +171,8 @@ CREATE TABLE stock (
 );
 
 
-\copy stock from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/stock.csv' WITH (FORMAT CSV, NULL 'null');
+\copy stock from '/temp/project_data/data_files/stock.csv' WITH (FORMAT CSV, NULL 'null');
+select count(*) as no_imported_rows from stock;
 
 -- show all tables
 \dt;

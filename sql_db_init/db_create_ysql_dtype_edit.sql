@@ -87,7 +87,7 @@ CREATE TABLE customer (
 
 -- insert from csv
 \copy customer from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/customer.csv' WITH (FORMAT CSV, NULL 'null');
-select count(*) as customerN from customer;
+select count(*) as no_imported_rows from customer;
 
 -- Note: order is a keyword in SQL due to "order by"
 DROP TABLE if EXISTS orders CASCADE;
@@ -110,7 +110,7 @@ CREATE TABLE orders (
 );
 
 \copy orders from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/order.csv' WITH (FORMAT CSV, NULL 'null');
-select count(*) as orderN from orders;
+select count(*) as no_imported_rows from orders;
 
 DROP TABLE if EXISTS item CASCADE;
 CREATE TABLE item (
@@ -123,7 +123,7 @@ CREATE TABLE item (
 );
 -- insert from csv
 \copy item from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/item.csv' WITH (FORMAT CSV, NULL 'null');
-select count(*) as itemN from item;
+select count(*) as no_imported_rows from item;
 
 -- 2 relationship tables -- 
 DROP TABLE if EXISTS orderline CASCADE;
@@ -148,7 +148,7 @@ CREATE TABLE orderline (
 );
 
 \copy orderline from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/order-line.csv' WITH (FORMAT CSV, NULL 'null');
-select count(*) as OrderLineN from "orderline";
+select count(*) as no_imported_rows from "orderline";
 
 DROP TABLE if EXISTS stock CASCADE;
 CREATE TABLE stock (
@@ -177,7 +177,7 @@ CREATE TABLE stock (
 
 
 \copy stock from '/Users/kennywu/Documents/NUScode/CS5424proj/distributedDatabase/data_files/stock.csv' WITH (FORMAT CSV, NULL 'null');
-select count(*) as stockN from stock;
+select count(*) as no_imported_rows from stock;
 
 -- show all tables
 \dt;
