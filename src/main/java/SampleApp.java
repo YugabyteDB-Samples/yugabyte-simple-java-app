@@ -17,7 +17,7 @@
 
 import common.Transaction;
 import common.TransactionType;
-import common.transactionImpl.NewOrderTransaction;
+import common.transactionImpl.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -91,23 +91,53 @@ public class SampleApp {
     }
 
     private static Transaction assembleRelatedCustomerTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        int C_W_ID = Integer.parseInt(firstLine[1]);
+        int C_D_ID = Integer.parseInt(firstLine[2]);
+        int C_ID = Integer.parseInt(firstLine[3]);
+        RelatedCustomerTransaction relatedCustomerTransaction = new RelatedCustomerTransaction();
+        relatedCustomerTransaction.setTransactionType(TransactionType.RELATED_CUSTOMER);
+        relatedCustomerTransaction.setC_W_ID(C_W_ID);
+        relatedCustomerTransaction.setC_D_ID(C_D_ID);
+        relatedCustomerTransaction.setC_ID(C_ID);
+        return relatedCustomerTransaction;
     }
 
     private static Transaction assembleTopBalanceTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        TopBalanceTransaction topBalanceTransaction = new TopBalanceTransaction();
+        topBalanceTransaction.setTransactionType(TransactionType.TOP_BALANCE);
+//        System.out.println("add a top balance item trans");
+        return topBalanceTransaction;
     }
 
     private static Transaction assemblePopularItemTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        int W_ID = Integer.parseInt(firstLine[1]);
+        int D_ID = Integer.parseInt(firstLine[2]);
+        int L = Integer.parseInt(firstLine[3]);
+        PopularItemTransaction popularItemTransaction = new PopularItemTransaction(W_ID,D_ID,L);
+        popularItemTransaction.setTransactionType(TransactionType.POPULAR_ITEM);
+//        System.out.println("add a popular item trans");
+        return popularItemTransaction;
     }
 
     private static Transaction assembleStockLevelTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        int W_ID = Integer.parseInt(firstLine[1]);
+        int D_ID = Integer.parseInt(firstLine[2]);
+        int T = Integer.parseInt(firstLine[3]);
+        int L = Integer.parseInt(firstLine[4]);
+        StockLevelTransaction stockLevelTransaction = new StockLevelTransaction(W_ID,D_ID,T,L);
+        stockLevelTransaction.setTransactionType(TransactionType.STOCK_LEVEL);
+//        System.out.println("add a stock level trans");
+        return stockLevelTransaction;
     }
 
     private static Transaction assembleOrderStatusTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        int C_W_ID = Integer.parseInt(firstLine[1]);
+        int C_D_ID = Integer.parseInt(firstLine[2]);
+        int C_ID = Integer.parseInt(firstLine[3]);
+        OrderStatusTransaction orderStatusTransaction = new OrderStatusTransaction(C_W_ID,C_D_ID,C_ID);
+        orderStatusTransaction.setTransactionType(TransactionType.ORDER_STATUS);
+        System.out.println("add a order status trans");
+        return orderStatusTransaction;
     }
 
     /*
@@ -142,13 +172,29 @@ public class SampleApp {
         newOrderTransaction.setSupplierWarehouses(suppliers);
         return newOrderTransaction;
     }
-
+    
     private static Transaction assembleDeliveryTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        DeliveryTransaction deliveryTransaction = new DeliveryTransaction();
+        int W_ID = Integer.parseInt(firstLine[1]);
+        int CARRIER_ID = Integer.parseInt(firstLine[2]);
+        deliveryTransaction.setTransactionType(TransactionType.DELIVERY);
+        deliveryTransaction.setW_ID(W_ID);
+        deliveryTransaction.setCARRIER_ID(CARRIER_ID);
+        return deliveryTransaction;
     }
 
     private static Transaction assemblePaymentTransaction(String[] firstLine, Scanner scanner) {
-        return null;
+        PaymentTransaction paymentTransaction = new PaymentTransaction();
+        int C_W_ID = Integer.parseInt(firstLine[1]);
+        int C_D_ID = Integer.parseInt(firstLine[2]);
+        int C_ID = Integer.parseInt(firstLine[3]);
+        float PAYMENT = Float.parseFloat(firstLine[4]);
+        paymentTransaction.setTransactionType(TransactionType.PAYMENT);
+        paymentTransaction.setC_ID(C_ID);
+        paymentTransaction.setC_D_ID(C_D_ID);
+        paymentTransaction.setC_W_ID(C_W_ID);
+        paymentTransaction.set_PAYMENT(PAYMENT);
+        return paymentTransaction;
     }
 
     private static void createDatabase(Connection conn) throws SQLException {
