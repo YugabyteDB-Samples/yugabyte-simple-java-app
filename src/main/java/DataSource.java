@@ -28,7 +28,7 @@ public class DataSource {
         poolProperties.setProperty("maximumPoolSize", "20");
         poolProperties.setProperty("dataSource.serverName", settings.getProperty("host"));
         poolProperties.setProperty("dataSource.portNumber", settings.getProperty("port"));
-        poolProperties.setProperty("dataSource.databaseName", "yugabyte");
+        poolProperties.setProperty("dataSource.databaseName", "dbysql");
         poolProperties.setProperty("dataSource.user", settings.getProperty("dbUser"));
         poolProperties.setProperty("dataSource.password", settings.getProperty("dbPassword"));
         poolProperties.setProperty("poolName", "HikariCP");
