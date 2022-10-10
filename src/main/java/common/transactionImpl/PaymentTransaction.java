@@ -38,15 +38,15 @@ public class PaymentTransaction extends Transaction {
                 "on t1.C_D_ID=t3.D_ID " +
                 "wHERE t1.C_W_ID=%d AND t1.C_D_ID=%d AND t1.C_ID=%d", PAYMENT, C_W_ID, C_D_ID, C_ID));
         System.out.println("Payment Transaction正在执行中...");
-//        while (rs.next()) {
-//            System.out.println("C_W_ID: " + rs.getInt(1) + "C_D_ID: " + rs.getInt(2) + "C_ID" + rs.getInt(3));
-//            System.out.println("C_FIRST: " + rs.getString(4) + "C_MIDDLE: " + rs.getString(5) + "C_LAST" + rs.getString(6));
-//            System.out.println("C_STREET_1: " + rs.getString(7) + "C_STREET_2: " + rs.getString(8) + "C_CITY: " + rs.getString(9) + "C_STATE: " + rs.getString(10) + "C_ZIP: " + rs.getString(11));
-//            System.out.println("C_PHONE：" + rs.getString(12) + "C_SINCE: " + rs.getString(13) + "C_CREDIT: " + rs.getString(14));
-//            System.out.println("C_CREDIT_LIM: " + rs.getFloat(15) + "C_DISCOUNT: " + rs.getFloat(16) + "C_BALANCE: " + rs.getFloat(17));
-//            System.out.println("W_STREET_1: " + rs.getString(18) + "W_STREET_2: " + rs.getString(19) + "W_CITY: " + rs.getString(20) + "W_STATE: " + rs.getString(21) + "W_ZIP: " + rs.getString(22));
-//            System.out.println("D_STREET_1: " + rs.getString(23) + "D_STREET_2: " + rs.getString(24) + "D_CITY: " + rs.getString(25) + "D_STATE: " + rs.getString(26) + "D_ZIP: " + rs.getString(27));
-//        }
+        while (rs.next()) {
+            System.out.println("C_W_ID: " + rs.getInt(1) + "C_D_ID: " + rs.getInt(2) + "C_ID" + rs.getInt(3));
+            System.out.println("C_FIRST: " + rs.getString(4) + "C_MIDDLE: " + rs.getString(5) + "C_LAST" + rs.getString(6));
+            System.out.println("C_STREET_1: " + rs.getString(7) + "C_STREET_2: " + rs.getString(8) + "C_CITY: " + rs.getString(9) + "C_STATE: " + rs.getString(10) + "C_ZIP: " + rs.getString(11));
+            System.out.println("C_PHONE：" + rs.getString(12) + "C_SINCE: " + rs.getString(13) + "C_CREDIT: " + rs.getString(14));
+            System.out.println("C_CREDIT_LIM: " + rs.getFloat(15) + "C_DISCOUNT: " + rs.getFloat(16) + "C_BALANCE: " + rs.getFloat(17));
+            System.out.println("W_STREET_1: " + rs.getString(18) + "W_STREET_2: " + rs.getString(19) + "W_CITY: " + rs.getString(20) + "W_STATE: " + rs.getString(21) + "W_ZIP: " + rs.getString(22));
+            System.out.println("D_STREET_1: " + rs.getString(23) + "D_STREET_2: " + rs.getString(24) + "D_CITY: " + rs.getString(25) + "D_STATE: " + rs.getString(26) + "D_ZIP: " + rs.getString(27));
+        }
     }
 
     public int getC_W_ID() {
