@@ -70,6 +70,7 @@ public class SampleApp {
             String[] firstLine = scanner.nextLine().split(",");
             String type = firstLine[0];
             Transaction transaction = null;
+            if (!type.equals(TransactionType.ORDER_STATUS.type)) continue;
             if (type.equals(TransactionType.PAYMENT.type)) {
                 transaction = assemblePaymentTransaction(firstLine, scanner);
             } else if (type.equals(TransactionType.DELIVERY.type)) {
@@ -139,7 +140,7 @@ public class SampleApp {
         int C_ID = Integer.parseInt(firstLine[3]);
         OrderStatusTransaction orderStatusTransaction = new OrderStatusTransaction(C_W_ID,C_D_ID,C_ID);
         orderStatusTransaction.setTransactionType(TransactionType.ORDER_STATUS);
-        System.out.println("add a order status trans");
+//        System.out.println("add a order status trans");
         return orderStatusTransaction;
     }
 

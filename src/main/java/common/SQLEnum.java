@@ -17,7 +17,7 @@ public enum SQLEnum {
             "",
             "select O_ID, O_ENTRY_D, O_CARRIER_ID from Orders where O_W_ID = 'C_W_ID' and O_D_ID = 'C_D_ID' and O_C_ID = 'C_ID' order by O_ID desc limit 1"),
 
-    OrderStatusTransaction3("select OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D from OrderLine where OL_W_ID = %d OL_D_ID = %d OL_O_ID = %d"
+    OrderStatusTransaction3("select OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D from OrderLine where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d"
             ,""
             ,"select OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D from OrderLine where OL_W_ID = 'C_W_ID' OL_D_ID = 'C_D_ID' OL_O_ID = 'O_ID'"),
 
