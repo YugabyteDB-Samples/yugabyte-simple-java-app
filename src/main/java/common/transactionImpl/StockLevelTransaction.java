@@ -34,7 +34,7 @@ public class StockLevelTransaction extends Transaction {
             int D_NEXT_O_ID = -1;
             while (rs.next()) {
                 D_NEXT_O_ID = rs.getInt(1);
-                System.out.printf("D_NEXT_O_ID=%d\n",D_NEXT_O_ID);
+//                System.out.printf("D_NEXT_O_ID=%d\n",D_NEXT_O_ID);
             }
             int N = D_NEXT_O_ID + 1;
             rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction2.SQL, W_ID, D_ID, N, L, N, T));
