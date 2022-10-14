@@ -13,6 +13,7 @@ import java.util.List;
 public class ExecuteManager {
     public void executeYSQLCommands(Connection conn, List<Transaction> list) {
         if (list == null) return;
+        System.out.printf("Execute YSQL transactions\n");
         for (Transaction transaction : list) {
             transaction.executeYSQL(conn);
         }
@@ -20,6 +21,7 @@ public class ExecuteManager {
 
     public void executeYCQLCommands(Connection conn, List<Transaction> list) {
         if (list == null) return;
+        System.out.printf("Execute YCQL transactions\n");
         for (Transaction transaction : list) {
             transaction.executeYCQL(conn);
         }

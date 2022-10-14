@@ -53,7 +53,10 @@ public class SampleApp {
 
         // 3. execute and report
         ExecuteManager manager = new ExecuteManager();
-        manager.executeYSQLCommands(conn, list);
+        if (DataSource.MODE.equals("YSQL")) {
+            manager.executeYSQLCommands(conn, list);
+        }
+        else manager.executeYCQLCommands(conn, list);
         manager.report();
     }
 
