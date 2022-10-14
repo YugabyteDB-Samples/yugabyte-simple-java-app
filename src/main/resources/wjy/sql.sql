@@ -477,12 +477,9 @@ group by
 
 -- version 1 (无中间值)
 with top_10_customers as(
-    select 
-        C_FIRST,
-        C_MIDDLE,
-        C_LAST,
-        C_BALANCE,
-    from 
+    select
+    *
+    from
         Customer  
     order by
         C_BALANCE desc

@@ -52,7 +52,7 @@ public enum SQLEnum {
             "",
             "with last_l_orders as ( select * from (select *, row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank from Orders where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' ) t where rank <= 'L' ), last_l_orders_items as ( select *, rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank from last_l_orders t1 left join OrderLine t2 on t1.O_W_ID = t2.OL_W_ID and t1.O_D_ID = t2.OL_D_ID and t1.O_ID = t2.OL_O_ID ) select t3.I_NAME, count(t2.OL_I_ID) / 'L' * 100 as I_Percentage from (select distinct OL_I_ID from last_l_orders_items where rank = 1) t1 left join last_l_orders_items t2 on t1.OL_I_ID = t2.OL_I_ID left join Item t3 on t1.OL_I_ID = t3.I_ID group by t2.I_NAME"),
 
-    TopBalanceTransaction1("with top_10_customers as( select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE, from Customer order by C_BALANCE desc limit 10 ) select t1.C_FIRST, t1.C_MIDDLE, t1.C_LAST, t1.C_BALANCE, t2.W_NAME, t3.D_NAME from top_10_customers t1 left join Warehouse t2 on t1.C_W_ID = t2.W_ID left join District t3 on t1.C_D_ID = t3.D_ID",
+    TopBalanceTransaction1("with top_10_customers as( select * from Customer order by C_BALANCE desc limit 10 ) select t1.C_FIRST, t1.C_MIDDLE, t1.C_LAST, t1.C_BALANCE, t2.W_NAME, t3.D_NAME from top_10_customers t1 left join Warehouse t2 on t1.C_W_ID = t2.W_ID left join District t3 on t1.C_D_ID = t3.D_ID",
             "",
             "with top_10_customers as( select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE, from Customer order by C_BALANCE desc limit 10 ) select t1.C_FIRST, t1.C_MIDDLE, t1.C_LAST, t1.C_BALANCE, t2.W_NAME, t3.D_NAME from top_10_customers t1 left join Warehouse t2 on t1.C_W_ID = t2.W_ID left join District t3 on t1.C_D_ID = t3.D_ID"),
     ;
