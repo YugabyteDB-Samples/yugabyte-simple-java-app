@@ -15,7 +15,7 @@ import java.util.Properties;
 public class DataSource {
     private static HikariConfig config = new HikariConfig();
     private static HikariDataSource ds;
-
+    public static String MODE;
     static {
         Properties poolProperties = new Properties();
         Properties settings = new Properties();
@@ -32,6 +32,7 @@ public class DataSource {
         poolProperties.setProperty("dataSource.user", settings.getProperty("dbUser"));
         poolProperties.setProperty("dataSource.password", settings.getProperty("dbPassword"));
         poolProperties.setProperty("poolName", "HikariCP");
+        MODE = settings.getProperty("mode");
 
         config = new HikariConfig(poolProperties);
         config.validate();
