@@ -2,11 +2,11 @@ package common.transactionImpl;
 
 import common.SQLEnum;
 import common.Transaction;
+import org.omg.CORBA.INTERNAL;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Package common.transactionImpl
@@ -20,35 +20,49 @@ public class OrderStatusTransaction extends Transaction {
     int C_ID;
 
     @Override
+    protected void YCQLExecute(Connection conn) {
+    }
+
+    @Override
     protected void YSQLExecute(Connection conn) {
-//        String sql1 = String.format("select distinct C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from Customer where C_W_ID = %d, and C_D_ID = %d and C_ID = %d", C_W_ID, C_D_ID, C_ID);
-//        String sql2 = String.format("select O_ID, O_ENTRY_D, O_CARRIER_ID from (select *, row_number()over(partition by O_W_ID, O_D_ID, O_C_ID order by O_ENTRY_D desc) as rank from Order where O_W_ID = %d and O_D_ID = %d and O_C_ID = %d) t where rank = 1", C_W_ID, C_D_ID, C_ID);
         try {
             ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.OrderStatusTransaction1.SQL, C_W_ID,C_D_ID,C_ID));
             while (rs.next()) {
-                int C_FIRST = rs.getInt(1);
-                int C_MIDDLE = rs.getInt(2);
-                int C_LAST = rs.getInt(3);
-                int C_BALANCE = rs.getInt(4);
-                System.out.printf("C_FIRST=%d,C_MIDDLE=%d,C_LAST=%d,C_BALANCE=%d\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE);
+                String C_FIRST = rs.getString(1);
+                String C_MIDDLE = rs.getString(2);
+                String C_LAST = rs.getString(3);
+                double C_BALANCE = rs.getDouble(4);
+                System.out.printf("C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s,C_BALANCE=%f\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE);
             }
 
             // get O_ID
             rs = conn.createStatement().executeQuery(String.format(SQLEnum.OrderStatusTransaction2.SQL, C_W_ID,C_D_ID,C_ID));
+            List<Integer> O_IDs = new ArrayList<>();
+            List<Timestamp> O_ENTRY_Ds = new ArrayList<>();
+            List<Integer> O_CARRIER_IDs = new ArrayList<>();
             while (rs.next()) {
                 int O_ID = rs.getInt(1);
-                int O_ENTRY_D = rs.getInt(2);
+                Timestamp O_ENTRY_D = rs.getTimestamp(2);
                 int O_CARRIER_ID = rs.getInt(3);
-                // sql3
-                System.out.printf("O_ID=%d\n");
-                ResultSet tmp = conn.createStatement().executeQuery(String.format(SQLEnum.OrderStatusTransaction3.SQL,C_W_ID,C_D_ID,O_ID));
+                O_ENTRY_Ds.add(O_ENTRY_D);
+                O_CARRIER_IDs.add(O_CARRIER_ID);
+                O_IDs.add(O_ID);
+            }
+            for (int i = 0; i < O_IDs.size(); i++) {
+                int O_ID = O_IDs.get(i);
+                Timestamp O_ENTRY_D = O_ENTRY_Ds.get(i);
+                int O_CARRIER_ID = O_CARRIER_IDs.get(i);
+                System.out.printf("O_ID=%d,O_ENTRY_D,O_CARRIER_ID\n",O_ID,O_ENTRY_D,O_CARRIER_ID);
+                String sql = String.format(SQLEnum.OrderStatusTransaction3.SQL,C_W_ID,C_D_ID,O_ID);
+                System.out.printf("SQL= %s\n",sql);
+                ResultSet tmp = conn.createStatement().executeQuery(sql);
                 while (tmp.next()) {
-                    int OL_I_ID = tmp.getInt(1);
-                    int OL_SUPPLY_W_ID = tmp.getInt(2);
-                    int OL_QUANTITY = tmp.getInt(3);
-                    int OL_AMOUNT = tmp.getInt(4);
-                    int OL_DELIVERY_D = tmp.getInt(5);
-                    System.out.printf("OL_I_ID=%d,OL_SUPPLY_W_ID=%d,OL_QUANTITY=%d,OL_AMOUNT=%d,OL_DELIVERY_D=%d\n",OL_I_ID,OL_SUPPLY_W_ID,OL_QUANTITY,OL_AMOUNT,OL_DELIVERY_D);
+                    int OL_I_ID = tmp.getInt(1); // INT
+                    int OL_SUPPLY_W_ID = tmp.getInt(2); // INT
+                    int OL_QUANTITY = tmp.getInt(3); // DECIMAL(2,0);
+                    double OL_AMOUNT = tmp.getDouble(4); // DECIMAL(6,2);
+                    Timestamp OL_DELIVERY_D = tmp.getTimestamp(5); // TIMESTAMP
+                    System.out.printf("OL_I_ID=%d,OL_SUPPLY_W_ID=%d,OL_QUANTITY=%d,OL_AMOUNT=%f,OL_DELIVERY_D=%s\n",OL_I_ID,OL_SUPPLY_W_ID,OL_QUANTITY,OL_AMOUNT,OL_DELIVERY_D);
                 }
             }
         } catch (SQLException e) {
