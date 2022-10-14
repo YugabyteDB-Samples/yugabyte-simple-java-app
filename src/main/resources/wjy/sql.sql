@@ -280,7 +280,7 @@ last_l_orders_items as (
 
 select 
     t1.O_ID,
-    t2.O_ENTRY_D,
+    t1.O_ENTRY_D,
     t2.C_FIRST,
     t2.C_MIDDLE,
     t2.C_LAST
