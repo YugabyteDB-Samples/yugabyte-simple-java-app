@@ -19,13 +19,13 @@ public class TopBalanceTransaction extends Transaction {
         try {
             ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.TopBalanceTransaction1.SQL));
             while (rs.next()) {
-                int C_FIRST = rs.getInt(1);
-                int C_MIDDLE = rs.getInt(2);
-                int C_LAST = rs.getInt(3);
-                int C_BALANCE = rs.getInt(4);
-                int W_NAME = rs.getInt(5);
-                int D_NAME = rs.getInt(6);
-                System.out.printf("C_FIRST=%d,C_MIDDLE=%d,C_LAST=%d,C_BALANCE=%d,W_NAME=%d,D_NAME=%d\n",C_FIRST,C_MIDDLE,C_LAST,C_BALANCE,W_NAME,D_NAME);
+                String C_FIRST = rs.getString(1);
+                String C_MIDDLE = rs.getString(2);
+                String C_LAST = rs.getString(3);
+                double C_BALANCE = rs.getDouble(4);
+                String W_NAME = rs.getString(5);
+                String D_NAME = rs.getString(6);
+                System.out.printf("C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s,C_BALANCE=%f,W_NAME=%s,D_NAME=%s\n",C_FIRST,C_MIDDLE,C_LAST,C_BALANCE,W_NAME,D_NAME);
             }
         } catch (SQLException e) {
             e.printStackTrace();

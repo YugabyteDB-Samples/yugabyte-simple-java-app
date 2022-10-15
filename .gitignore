@@ -5,3 +5,6 @@ dependency-reduced-pom.xml
 src/.DS_Store
 src/main/.DS_Store
 
+# ignore 老师给的数据和Xact文件
+*_files/
+
