@@ -52,9 +52,9 @@ public class OrderStatusTransaction extends Transaction {
                 int O_ID = O_IDs.get(i);
                 Timestamp O_ENTRY_D = O_ENTRY_Ds.get(i);
                 int O_CARRIER_ID = O_CARRIER_IDs.get(i);
-                System.out.printf("O_ID=%d,O_ENTRY_D,O_CARRIER_ID\n",O_ID,O_ENTRY_D,O_CARRIER_ID);
+                System.out.printf("O_ID=%d,O_ENTRY_D=%s,O_CARRIER_ID=%d\n",O_ID,O_ENTRY_D,O_CARRIER_ID);
                 String sql = String.format(SQLEnum.OrderStatusTransaction3.SQL,C_W_ID,C_D_ID,O_ID);
-                System.out.printf("SQL= %s\n",sql);
+//                System.out.printf("SQL= %s\n",sql);
                 ResultSet tmp = conn.createStatement().executeQuery(sql);
                 while (tmp.next()) {
                     int OL_I_ID = tmp.getInt(1); // INT

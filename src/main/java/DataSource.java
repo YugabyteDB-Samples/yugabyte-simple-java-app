@@ -24,7 +24,13 @@ public class DataSource {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        poolProperties.setProperty("dataSourceClassName", "com.yugabyte.ysql.YBClusterAwareDataSource");
+        MODE = settings.getProperty("mode");
+        if (MODE.equals("YSQL")) {
+            poolProperties.setProperty("dataSourceClassName", "com.yugabyte.ysql.YBClusterAwareDataSource");
+        }
+        else {
+            poolProperties.setProperty("dataSourceClassName", "com.yugabyte.ysql.YBClusterAwareDataSource");
+        }
         poolProperties.setProperty("maximumPoolSize", "20");
         poolProperties.setProperty("dataSource.serverName", settings.getProperty("host"));
         poolProperties.setProperty("dataSource.portNumber", settings.getProperty("port"));
@@ -32,7 +38,6 @@ public class DataSource {
         poolProperties.setProperty("dataSource.user", settings.getProperty("dbUser"));
         poolProperties.setProperty("dataSource.password", settings.getProperty("dbPassword"));
         poolProperties.setProperty("poolName", "HikariCP");
-        MODE = settings.getProperty("mode");
 
         config = new HikariConfig(poolProperties);
         config.validate();

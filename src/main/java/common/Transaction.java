@@ -40,8 +40,8 @@ public abstract class Transaction {
 
     protected void postActuallyExecute() {
         long endTimeStamp = System.currentTimeMillis();
-        long seconds = TimeUnit.MICROSECONDS.toSeconds(endTimeStamp - startTimeStamp);
-        System.out.printf("%s completes,takes %d seconds\n",transactionType, seconds);
+        long seconds = TimeUnit.MILLISECONDS.toMillis(endTimeStamp - startTimeStamp);
+        System.out.printf("%s completes,takes %d milliseconds\n",transactionType, seconds);
     }
 
     public TransactionType getTransactionType() {
