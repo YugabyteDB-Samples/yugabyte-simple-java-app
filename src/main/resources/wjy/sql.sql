@@ -254,20 +254,20 @@ with last_l_orders as (
     from 
         (select 
             *,
-            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank
+            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank_order
         from 
             Orders
         where
             O_W_ID = 'W_ID'
             and O_D_ID = 'D_ID'
         ) t
-    where rank <= 'L'
+    where rank_order <= 'L'
 ),
 
 last_l_orders_items as (
     select
         *,
-        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank
+        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank_item
     from 
         last_l_orders t1
     left join 
@@ -302,20 +302,20 @@ with last_l_orders as (
     from
         (select
             *,
-            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank
+            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank_order
         from
             Orders
         where
             O_W_ID = 'W_ID'
             and O_D_ID = 'D_ID'
         ) t
-    where rank <= 'L'
+    where rank_order <= 'L'
 ),
 
 last_l_orders_items as (
     select
         *,
-        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank
+        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank_item
     from
         last_l_orders t1
     left join
@@ -337,7 +337,7 @@ left join
 on 
     t1.OL_I_ID = t2.I_ID
 where 
-    t1.rank = 1
+    t1.rank_item = 1
 order by 
     t1.O_ID
 ;
@@ -351,20 +351,20 @@ with last_l_orders as (
     from
         (select
             *,
-            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank
+            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank_order
         from
             Orders
         where
             O_W_ID = 'W_ID'
             and O_D_ID = 'D_ID'
         ) t
-    where rank <= 'L'
+    where rank_order <= 'L'
 ),
 
 last_l_orders_items as (
     select
         *,
-        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank
+        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank_item
     from
         last_l_orders t1
     left join
@@ -379,7 +379,7 @@ select
     t3.I_NAME,
     count(t2.OL_I_ID) / 'L' * 100 as I_Percentage
 from
-    (select distinct OL_I_ID from last_l_orders_items where rank = 1) t1
+    (select distinct OL_I_ID from last_l_orders_items where rank_item = 1) t1
 left join
     last_l_orders_items t2 
 on 
@@ -389,7 +389,7 @@ left join
 on 
     t1.OL_I_ID = t3.I_ID
 group by 
-    t2.I_NAME
+    t3.I_NAME
 ;
 ---- SQL3 end
 
