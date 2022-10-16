@@ -70,7 +70,7 @@ public class SampleApp {
             String[] firstLine = scanner.nextLine().split(",");
             String type = firstLine[0];
             Transaction transaction = null;
-            if (!type.equals(TransactionType.TOP_BALANCE.type)) continue;
+            if (!type.equals(TransactionType.ORDER_STATUS.type)) continue;
             if (type.equals(TransactionType.PAYMENT.type)) {
                 transaction = assemblePaymentTransaction(firstLine, scanner);
             } else if (type.equals(TransactionType.DELIVERY.type)) {
