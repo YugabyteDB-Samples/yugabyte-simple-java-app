@@ -33,7 +33,7 @@ public class SampleApp {
     private static final String TABLE_NAME = "DemoAccount";
     private static Connection conn;
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         // 1. Establish a DB connection
         try {
             conn = DataSource.getConnection();
@@ -53,7 +53,10 @@ public class SampleApp {
 
         // 3. execute and report
         ExecuteManager manager = new ExecuteManager();
-        manager.executeYSQLCommands(conn, list);
+        if (DataSource.MODE.equals("YSQL")) {
+            manager.executeYSQLCommands(conn, list);
+        }
+        else manager.executeYCQLCommands(conn, list);
         manager.report();
     }
 
@@ -67,22 +70,23 @@ public class SampleApp {
             String[] firstLine = scanner.nextLine().split(",");
             String type = firstLine[0];
             Transaction transaction = null;
+            if (!type.equals(TransactionType.ORDER_STATUS.type)) continue;
             if (type.equals(TransactionType.PAYMENT.type)) {
                 transaction = assemblePaymentTransaction(firstLine, scanner);
             } else if (type.equals(TransactionType.DELIVERY.type)) {
                 transaction = assembleDeliveryTransaction(firstLine, scanner);
-//            } else if (type.equals(TransactionType.NEW_ORDER.type)) {
-//                transaction = assembleNewOrderTransaction(firstLine, scanner);
-//            } else if (type.equals(TransactionType.ORDER_STATUS.type)) {
-//                transaction = assembleOrderStatusTransaction(firstLine, scanner);
-//            } else if (type.equals(TransactionType.STOCK_LEVEL.type)) {
-//                transaction = assembleStockLevelTransaction(firstLine, scanner);
-//            } else if (type.equals(TransactionType.POPULAR_ITEM.type)) {
-//                transaction = assemblePopularItemTransaction(firstLine, scanner);
-//            } else if (type.equals(TransactionType.TOP_BALANCE.type)) {
-//                transaction = assembleTopBalanceTransaction(firstLine, scanner);
-//            } else if (type.equals(TransactionType.RELATED_CUSTOMER.type)) {
-//                transaction = assembleRelatedCustomerTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.NEW_ORDER.type)) {
+                transaction = assembleNewOrderTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.ORDER_STATUS.type)) {
+                transaction = assembleOrderStatusTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.STOCK_LEVEL.type)) {
+                transaction = assembleStockLevelTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.POPULAR_ITEM.type)) {
+                transaction = assemblePopularItemTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.TOP_BALANCE.type)) {
+                transaction = assembleTopBalanceTransaction(firstLine, scanner);
+            } else if (type.equals(TransactionType.RELATED_CUSTOMER.type)) {
+                transaction = assembleRelatedCustomerTransaction(firstLine, scanner);
             }
             if (transaction != null) list.add(transaction);
         }
@@ -136,7 +140,7 @@ public class SampleApp {
         int C_ID = Integer.parseInt(firstLine[3]);
         OrderStatusTransaction orderStatusTransaction = new OrderStatusTransaction(C_W_ID,C_D_ID,C_ID);
         orderStatusTransaction.setTransactionType(TransactionType.ORDER_STATUS);
-        System.out.println("add a order status trans");
+//        System.out.println("add a order status trans");
         return orderStatusTransaction;
     }
 

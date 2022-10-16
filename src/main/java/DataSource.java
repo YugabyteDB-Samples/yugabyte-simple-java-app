@@ -15,7 +15,7 @@ import java.util.Properties;
 public class DataSource {
     private static HikariConfig config = new HikariConfig();
     private static HikariDataSource ds;
-
+    public static String MODE;
     static {
         Properties poolProperties = new Properties();
         Properties settings = new Properties();
@@ -24,7 +24,13 @@ public class DataSource {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        poolProperties.setProperty("dataSourceClassName", "com.yugabyte.ysql.YBClusterAwareDataSource");
+        MODE = settings.getProperty("mode");
+        if (MODE.equals("YSQL")) {
+            poolProperties.setProperty("dataSourceClassName", "com.yugabyte.ysql.YBClusterAwareDataSource");
+        }
+        else {
+            poolProperties.setProperty("dataSourceClassName", "com.yugabyte.ysql.YBClusterAwareDataSource");
+        }
         poolProperties.setProperty("maximumPoolSize", "20");
         poolProperties.setProperty("dataSource.serverName", settings.getProperty("host"));
         poolProperties.setProperty("dataSource.portNumber", settings.getProperty("port"));
