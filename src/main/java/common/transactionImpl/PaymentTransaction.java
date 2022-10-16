@@ -1,5 +1,8 @@
 package common.transactionImpl;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import common.Transaction;
+import sun.security.krb5.internal.PAForUserEnc;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -13,8 +16,7 @@ public class PaymentTransaction extends Transaction {
     int C_ID;
     float PAYMENT;
 
-    @Override
-    protected void actuallyExecute(Connection conn) throws SQLException {
+    protected void YSQLExecute(Connection conn) throws SQLException {
         Statement stmt = conn.createStatement();
         stmt.execute(String.format("UPDATE Warehouse SET W_YTD = W_YTD + %f WHERE W_ID = %d", PAYMENT, C_W_ID));
         stmt.execute(String.format("UPDATE District SET D_YTD = D_YTD + %f WHERE D_W_ID = %d AND D_ID = %d", PAYMENT, C_W_ID, C_D_ID));
@@ -47,6 +49,20 @@ public class PaymentTransaction extends Transaction {
             System.out.println("W_STREET_1: " + rs.getString(18) + "W_STREET_2: " + rs.getString(19) + "W_CITY: " + rs.getString(20) + "W_STATE: " + rs.getString(21) + "W_ZIP: " + rs.getString(22));
             System.out.println("D_STREET_1: " + rs.getString(23) + "D_STREET_2: " + rs.getString(24) + "D_CITY: " + rs.getString(25) + "D_STATE: " + rs.getString(26) + "D_ZIP: " + rs.getString(27));
         }
+        System.out.println("Payment Transaction执行完毕！");
+    }
+
+    protected void YCQLExecute(CqlSession session) {
+        SimpleStatement stmt = SimpleStatement.newInstance(String.format("UPDATE Warehouse SET W_YTD=W_YTD+%f WHERE W_ID=%d", PAYMENT, C_W_ID));
+        session.execute(stmt);
+        stmt = SimpleStatement.newInstance(String.format("UPDATE District SET D_YTD=D_YTD+%f WHERE D_W_ID=%d AND D_ID=%d", PAYMENT, C_W_ID, C_D_ID));
+        session.execute(stmt);
+        stmt = SimpleStatement.newInstance(String.format("UPDATE Customer SET C_BALANCE=C_BALANCE-%f WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", PAYMENT, C_W_ID, C_D_ID, C_ID));
+        session.execute(stmt);
+        stmt = SimpleStatement.newInstance(String.format("UPDATE Customer SET C_YTD_PAYMENT=C_YTD_PAYMENT+%f WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", PAYMENT, C_W_ID, C_D_ID, C_ID));
+        session.execute(stmt);
+        stmt = SimpleStatement.newInstance(String.format("UPDATE Customer SET C_PAYMENT_CNT=C_PAYMENT_CNT+%d WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", 1, C_W_ID, C_D_ID, C_ID));
+        session.execute(stmt);
     }
 
     public int getC_W_ID() {

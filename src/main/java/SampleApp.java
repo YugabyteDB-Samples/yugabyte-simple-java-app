@@ -53,7 +53,7 @@ public class SampleApp {
 
         // 3. execute and report
         ExecuteManager manager = new ExecuteManager();
-        manager.executeCommands(conn, list);
+        manager.executeYSQLCommands(conn, list);
         manager.report();
     }
 
@@ -71,18 +71,18 @@ public class SampleApp {
                 transaction = assemblePaymentTransaction(firstLine, scanner);
             } else if (type.equals(TransactionType.DELIVERY.type)) {
                 transaction = assembleDeliveryTransaction(firstLine, scanner);
-            } else if (type.equals(TransactionType.NEW_ORDER.type)) {
-                transaction = assembleNewOrderTransaction(firstLine, scanner);
-            } else if (type.equals(TransactionType.ORDER_STATUS.type)) {
-                transaction = assembleOrderStatusTransaction(firstLine, scanner);
-            } else if (type.equals(TransactionType.STOCK_LEVEL.type)) {
-                transaction = assembleStockLevelTransaction(firstLine, scanner);
-            } else if (type.equals(TransactionType.POPULAR_ITEM.type)) {
-                transaction = assemblePopularItemTransaction(firstLine, scanner);
-            } else if (type.equals(TransactionType.TOP_BALANCE.type)) {
-                transaction = assembleTopBalanceTransaction(firstLine, scanner);
-            } else if (type.equals(TransactionType.RELATED_CUSTOMER.type)) {
-                transaction = assembleRelatedCustomerTransaction(firstLine, scanner);
+//            } else if (type.equals(TransactionType.NEW_ORDER.type)) {
+//                transaction = assembleNewOrderTransaction(firstLine, scanner);
+//            } else if (type.equals(TransactionType.ORDER_STATUS.type)) {
+//                transaction = assembleOrderStatusTransaction(firstLine, scanner);
+//            } else if (type.equals(TransactionType.STOCK_LEVEL.type)) {
+//                transaction = assembleStockLevelTransaction(firstLine, scanner);
+//            } else if (type.equals(TransactionType.POPULAR_ITEM.type)) {
+//                transaction = assemblePopularItemTransaction(firstLine, scanner);
+//            } else if (type.equals(TransactionType.TOP_BALANCE.type)) {
+//                transaction = assembleTopBalanceTransaction(firstLine, scanner);
+//            } else if (type.equals(TransactionType.RELATED_CUSTOMER.type)) {
+//                transaction = assembleRelatedCustomerTransaction(firstLine, scanner);
             }
             if (transaction != null) list.add(transaction);
         }
