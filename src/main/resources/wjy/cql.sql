@@ -34,7 +34,7 @@ where D_W_ID = 'W_ID' and D_ID = 'D_ID';
 -- 得到 N = D_NEXT_O_ID
 
 -- CQL2
-select OL_I_ID  from OrderLine
+select OL_I_ID from OrderLine
 where OL_W_ID = 'W_ID' and OL_D_ID = 'D_ID' and OL_O_ID >= 'N'-'L' and OL_O_ID < 'N'
 allow filtering;
 -- 得到'OL_I_ID'的集合IL (需要对'OL_I_ID'去重)
@@ -69,7 +69,7 @@ allow filtering;
 
 --for every O_ID:
     -- CQL4
-    select OL_W_ID, OL_D_ID, OL_O_ID, OL_QUANTITY as MAX_OL_QUANTITY from OrderLine
+    select OL_W_ID, OL_D_ID, OL_O_ID, OL_QUANTITY from OrderLine
     where OL_W_ID = 'W_ID' and OL_D_ID = 'D_ID' and OL_O_ID = 'O_ID'
     order by OL_QUANTITY desc limit 1 allow filtering;
     -- 得到 MAX_OL_QUANTITY = OL_QUANTITY
