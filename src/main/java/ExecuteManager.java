@@ -1,3 +1,4 @@
+import com.datastax.oss.driver.api.core.CqlSession;
 import common.Transaction;
 import common.TransactionType;
 
@@ -12,19 +13,11 @@ import java.util.List;
  * @Date 1/10/22 5:28 PM
  */
 public class ExecuteManager {
-    public void executeYSQLCommands(Connection conn, List<Transaction> list) throws SQLException {
-        if (list == null) return;
-        System.out.printf("Execute YSQL transactions\n");
-        for (Transaction transaction : list) {
-            transaction.executeYSQL(conn);
-        }
-    }
-
-    public void executeYCQLCommands(Connection conn, List<Transaction> list) {
+    public void executeYCQLCommands(CqlSession cqlSession, List<Transaction> list) {
         if (list == null) return;
         System.out.printf("Execute YCQL transactions\n");
         for (Transaction transaction : list) {
-            transaction.executeYCQL(conn);
+            transaction.executeYCQL(cqlSession);
         }
     }
 

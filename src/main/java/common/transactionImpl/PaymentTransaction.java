@@ -1,8 +1,7 @@
 package common.transactionImpl;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import common.Transaction;
-
-import java.sql.Connection;
 
 
 public class PaymentTransaction extends Transaction {
@@ -12,7 +11,7 @@ public class PaymentTransaction extends Transaction {
     float PAYMENT;
 
     @Override
-    protected void YSQLExecute(Connection conn) {
+    protected void execute(CqlSession cqlSession) {
 
     }
 

@@ -1,12 +1,7 @@
 package common.transactionImpl;
 
-import common.SQLEnum;
+import com.datastax.oss.driver.api.core.CqlSession;
 import common.Transaction;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * @Package common.transactionImpl
@@ -28,23 +23,8 @@ public class StockLevelTransaction extends Transaction {
     }
 
     @Override
-    protected void YSQLExecute(Connection conn) {
-        try {
-            ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction1.SQL, W_ID, D_ID));
-            int D_NEXT_O_ID = -1;
-            while (rs.next()) {
-                D_NEXT_O_ID = rs.getInt(1);
-//                System.out.printf("D_NEXT_O_ID=%d\n",D_NEXT_O_ID);
-            }
-            int N = D_NEXT_O_ID + 1;
-            rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction2.SQL, W_ID, D_ID, N, L, N, T));
-            while (rs.next()) {
-                int cnt = rs.getInt(1);
-                System.out.printf("Count=%d\n",cnt);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    protected void execute(CqlSession cqlSession) {
+
     }
 
     public int getW_ID() {

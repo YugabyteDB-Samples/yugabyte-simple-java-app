@@ -1,10 +1,10 @@
 package common.transactionImpl;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import common.Transaction;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -22,27 +22,14 @@ public class NewOrderTransaction extends Transaction {
     List<Integer> quantities;
 
     @Override
-    protected void YSQLExecute(Connection conn) {
-        String sql1 = String.format("update District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = %d and D_ID = %d",W_ID,D_ID);
-        String sql2 = String.format("select D_NEXT_O_ID from District where D_W_ID = %d and D_ID = %d",W_ID,D_ID);
-        String sql3 = String.format("create table new_order_info (NO_O_ID, NO_N, NO_W_ID, NO_D_ID, NO_C_ID, NO_I_ID, NO_SUPPLY_W_ID, NO_QUANTITY primary key (NO_O_ID, NO_N))");
-//        try {
-//            conn.createStatement().executeUpdate(sql1); // Update
-//            ResultSet rs = conn.createStatement().executeQuery(sql2);
-//            int N = -1;
-//            while (rs.next()) {
-//                N = rs.getInt(1);
-//            }
-//            conn.createStatement().executeUpdate(sql3);
-//            for (int i = 0; i < items.size(); i++) {
-//                int ITEM_NUMBER = items.get(i);
-////                int ITEM_NUMBER = items.get(i);
-//                String sql4 = String.format("insert into new_order_info values 'N', i, 'W_ID', 'D_ID', 'C_ID', 'OL_I_ID', 'OL_SUPPLY_W_ID', 'OL_QUANTITY'",N, )
-//            }
-//
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
+    protected void execute(CqlSession cqlSession) {
+        String cql = "SELECT * FROM dbycql.Customer Limit 20";
+        ResultSet resultSet = cqlSession.execute(cql);
+        List<Row> rows = resultSet.all();
+        System.out.printf("Get %d result\n",rows.size());
+        for (Row row : rows) {
+            System.out.println(row);
+        }
     }
 
     public int getW_ID() {
