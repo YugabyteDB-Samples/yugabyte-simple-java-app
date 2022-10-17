@@ -1,8 +1,6 @@
 package common.transactionImpl;
 
-import common.SQLEnum;
 import common.Transaction;
-import org.omg.CORBA.INTERNAL;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -26,8 +24,12 @@ public class OrderStatusTransaction extends Transaction {
     @Override
     protected void YSQLExecute(Connection conn) {
         try {
-            Statement statement = conn.createStatement();
-            ResultSet rs = statement.executeQuery(String.format(SQLEnum.OrderStatusTransaction1.SQL, C_W_ID,C_D_ID,C_ID));
+            String SQL1 = "select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from Customer where C_W_ID = ? and C_D_ID = ? and C_ID = ?";
+            PreparedStatement statement = conn.prepareStatement(SQL1);
+            statement.setInt(1, C_W_ID);
+            statement.setInt(2, C_D_ID);
+            statement.setInt(3, C_ID);
+            ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 String C_FIRST = rs.getString(1);
                 String C_MIDDLE = rs.getString(2);
@@ -37,7 +39,12 @@ public class OrderStatusTransaction extends Transaction {
             }
 
             // get O_ID
-            rs = statement.executeQuery(String.format(SQLEnum.OrderStatusTransaction2.SQL, C_W_ID,C_D_ID,C_ID));
+            String SQL2 = "select O_ID, O_ENTRY_D, O_CARRIER_ID from Orders where O_W_ID = ? and O_D_ID = ? and O_C_ID = ? order by O_ID desc limit 1";
+            statement = conn.prepareStatement(SQL2);
+            statement.setInt(1, C_W_ID);
+            statement.setInt(2, C_D_ID);
+            statement.setInt(3, C_ID);
+            rs = statement.executeQuery();
             List<Integer> O_IDs = new ArrayList<>();
             List<Timestamp> O_ENTRY_Ds = new ArrayList<>();
             List<Integer> O_CARRIER_IDs = new ArrayList<>();
@@ -49,21 +56,25 @@ public class OrderStatusTransaction extends Transaction {
                 O_CARRIER_IDs.add(O_CARRIER_ID);
                 O_IDs.add(O_ID);
             }
+
             for (int i = 0; i < O_IDs.size(); i++) {
                 int O_ID = O_IDs.get(i);
                 Timestamp O_ENTRY_D = O_ENTRY_Ds.get(i);
                 int O_CARRIER_ID = O_CARRIER_IDs.get(i);
-                System.out.printf("O_ID=%d,O_ENTRY_D=%s,O_CARRIER_ID=%d\n",O_ID,O_ENTRY_D,O_CARRIER_ID);
-                String sql = String.format(SQLEnum.OrderStatusTransaction3.SQL,C_W_ID,C_D_ID,O_ID);
-//                System.out.printf("SQL= %s\n",sql);
-                ResultSet tmp = statement.executeQuery(sql);
-                while (tmp.next()) {
-                    int OL_I_ID = tmp.getInt(1); // INT
-                    int OL_SUPPLY_W_ID = tmp.getInt(2); // INT
-                    int OL_QUANTITY = tmp.getInt(3); // DECIMAL(2,0);
-                    double OL_AMOUNT = tmp.getDouble(4); // DECIMAL(6,2);
-                    Timestamp OL_DELIVERY_D = tmp.getTimestamp(5); // TIMESTAMP
-                    System.out.printf("OL_I_ID=%d,OL_SUPPLY_W_ID=%d,OL_QUANTITY=%d,OL_AMOUNT=%f,OL_DELIVERY_D=%s\n",OL_I_ID,OL_SUPPLY_W_ID,OL_QUANTITY,OL_AMOUNT,OL_DELIVERY_D);
+                System.out.printf("O_ID=%d,O_ENTRY_D=%s,O_CARRIER_ID=%d\n", O_ID, O_ENTRY_D, O_CARRIER_ID);
+                String SQL3 = "select OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D from OrderLine where OL_W_ID = ? and OL_D_ID = ? and OL_O_ID = ?";
+                statement = conn.prepareStatement(SQL3);
+                statement.setInt(1, C_W_ID);
+                statement.setInt(2, C_D_ID);
+                statement.setInt(3, O_ID);
+                rs = statement.executeQuery();
+                while (rs.next()) {
+                    int OL_I_ID = rs.getInt(1); // INT
+                    int OL_SUPPLY_W_ID = rs.getInt(2); // INT
+                    int OL_QUANTITY = rs.getInt(3); // DECIMAL(2,0);
+                    double OL_AMOUNT = rs.getDouble(4); // DECIMAL(6,2);
+                    Timestamp OL_DELIVERY_D = rs.getTimestamp(5); // TIMESTAMP
+                    System.out.printf("OL_I_ID=%d,OL_SUPPLY_W_ID=%d,OL_QUANTITY=%d,OL_AMOUNT=%f,OL_DELIVERY_D=%s\n", OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D);
                 }
             }
         } catch (SQLException e) {
