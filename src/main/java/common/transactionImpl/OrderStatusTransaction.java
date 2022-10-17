@@ -26,7 +26,8 @@ public class OrderStatusTransaction extends Transaction {
     @Override
     protected void YSQLExecute(Connection conn) {
         try {
-            ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.OrderStatusTransaction1.SQL, C_W_ID,C_D_ID,C_ID));
+            Statement statement = conn.createStatement();
+            ResultSet rs = statement.executeQuery(String.format(SQLEnum.OrderStatusTransaction1.SQL, C_W_ID,C_D_ID,C_ID));
             while (rs.next()) {
                 String C_FIRST = rs.getString(1);
                 String C_MIDDLE = rs.getString(2);
@@ -36,7 +37,7 @@ public class OrderStatusTransaction extends Transaction {
             }
 
             // get O_ID
-            rs = conn.createStatement().executeQuery(String.format(SQLEnum.OrderStatusTransaction2.SQL, C_W_ID,C_D_ID,C_ID));
+            rs = statement.executeQuery(String.format(SQLEnum.OrderStatusTransaction2.SQL, C_W_ID,C_D_ID,C_ID));
             List<Integer> O_IDs = new ArrayList<>();
             List<Timestamp> O_ENTRY_Ds = new ArrayList<>();
             List<Integer> O_CARRIER_IDs = new ArrayList<>();
@@ -55,7 +56,7 @@ public class OrderStatusTransaction extends Transaction {
                 System.out.printf("O_ID=%d,O_ENTRY_D=%s,O_CARRIER_ID=%d\n",O_ID,O_ENTRY_D,O_CARRIER_ID);
                 String sql = String.format(SQLEnum.OrderStatusTransaction3.SQL,C_W_ID,C_D_ID,O_ID);
 //                System.out.printf("SQL= %s\n",sql);
-                ResultSet tmp = conn.createStatement().executeQuery(sql);
+                ResultSet tmp = statement.executeQuery(sql);
                 while (tmp.next()) {
                     int OL_I_ID = tmp.getInt(1); // INT
                     int OL_SUPPLY_W_ID = tmp.getInt(2); // INT

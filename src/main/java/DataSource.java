@@ -42,7 +42,7 @@ public class DataSource {
         config = new HikariConfig(poolProperties);
         config.validate();
         String jdbcUrl = "jdbc:yugabytedb://" + settings.getProperty("host") + ":"
-                + settings.getProperty("port") + "/yugabyte";
+                + settings.getProperty("port") + "dbysql?load_balance=true";
         config.setJdbcUrl(jdbcUrl);
 
         ds = new HikariDataSource(config);
