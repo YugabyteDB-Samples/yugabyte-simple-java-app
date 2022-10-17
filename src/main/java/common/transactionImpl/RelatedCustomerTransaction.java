@@ -4,7 +4,6 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import common.Transaction;
-import sun.java2d.xr.MutableInteger;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -55,7 +54,7 @@ public class RelatedCustomerTransaction extends Transaction {
     }
 
     protected void YCQLExecute(CqlSession session) {
-        HashMap<List<Integer>, MutableInteger> outputLine = new HashMap<List<Integer>, MutableInteger>();
+        HashMap<List<Integer>, Integer> outputLine = new HashMap<List<Integer>, Integer>();
         SimpleStatement stmt = SimpleStatement.newInstance(String.format("select " +
                 "O_W_ID, " +
                 "O_D_ID, " +
@@ -101,11 +100,11 @@ public class RelatedCustomerTransaction extends Transaction {
         for (Row finalRs : outRs) {
             if (!Objects.equals(String.valueOf(finalRs.getInt("CI_W_ID")), String.valueOf(C_W_ID))) {
                 List<Integer> order_info = Arrays.asList(finalRs.getInt("CI_W_ID"), finalRs.getInt("CI_D_ID"), finalRs.getInt("CI_C_ID"));
-                MutableInteger initValue = new MutableInteger(1);
-                MutableInteger oldValue = outputLine.put(order_info, initValue);
-
-                if (oldValue != null) {
-                    initValue.setValue(oldValue.getValue()+1);
+                boolean flag = outputLine.containsKey(order_info);
+                if (flag) {
+                    outputLine.put(order_info, outputLine.get(order_info)+1);
+                }else {
+                    outputLine.put(order_info, 1);
                 }
             }
         }

@@ -1,5 +1,8 @@
 package common.transactionImpl;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import common.Transaction;
 
 import java.sql.Connection;
@@ -7,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.Iterator;
 
 public class DeliveryTransaction extends Transaction {
     int W_ID;
@@ -68,10 +72,10 @@ public class DeliveryTransaction extends Transaction {
                     "from order_dev " +
                     "where WHERE O_W_ID=%d and O_CARRIER_ID is null and O_D_ID=%d" +
                     "LIMIT 1 allow filtering", W_ID, d_ID));
-            ResultSet rs = session.execute(stmt);
+            com.datastax.oss.driver.api.core.cql.ResultSet rs = session.execute(stmt);
             Iterator<Row> rsIterator = rs.iterator();
             while (rsIterator.hasNext()) {
-                Row row = iter.Next();
+                Row row = rsIterator.next();
                 o_ID = row.getInt(1);
                 c_ID = row.getInt(2);
             }
@@ -85,7 +89,7 @@ public class DeliveryTransaction extends Transaction {
             rs = session.execute(stmt);
             rsIterator = rs.iterator();
             while (rsIterator.hasNext()) {
-                Row row = iter.Next();
+                Row row = rsIterator.next();
                 max_Order = row.getInt(1);
             }
             // 第三个cql
@@ -103,7 +107,7 @@ public class DeliveryTransaction extends Transaction {
             rs = session.execute(stmt);
             rsIterator = rs.iterator();
             while (rsIterator.hasNext()) {
-                Row row = iter.Next();
+                Row row = rsIterator.next();
                 sum_Amt = row.getInt(1);
             }
             // 第五个cql
