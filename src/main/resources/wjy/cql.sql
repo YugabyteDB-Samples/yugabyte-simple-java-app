@@ -41,12 +41,19 @@ where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d
 --CQL1
 select D_NEXT_O_ID from dbycql.District
 where D_W_ID = 'W_ID' and D_ID = 'D_ID';
+--copy
+select D_NEXT_O_ID from dbycql.District
+where D_W_ID = %d and D_ID = %d
 -- 得到 N = D_NEXT_O_ID
 
 -- CQL2
 select OL_I_ID from dbycql.OrderLine
 where OL_W_ID = 'W_ID' and OL_D_ID = 'D_ID' and OL_O_ID >= 'N'-'L' and OL_O_ID < 'N'
 allow filtering;
+--copy
+select OL_I_ID from dbycql.OrderLine
+where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID >= %d - %d and OL_O_ID < %d
+allow filtering
 -- 得到'OL_I_ID'的集合IL (需要对'OL_I_ID'去重)
 
 -- CQL3
