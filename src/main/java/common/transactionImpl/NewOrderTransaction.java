@@ -1,6 +1,7 @@
 package common.transactionImpl;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import common.Transaction;
@@ -24,6 +25,7 @@ public class NewOrderTransaction extends Transaction {
     @Override
     protected void execute(CqlSession cqlSession) {
         String cql = "SELECT * FROM dbycql.Customer Limit 20";
+        PreparedStatement preparedStatement = cqlSession.prepare(cql);
         ResultSet resultSet = cqlSession.execute(cql);
         List<Row> rows = resultSet.all();
         System.out.printf("Get %d result\n",rows.size());

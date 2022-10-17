@@ -1,9 +1,9 @@
 -- YCQL
 -- 1. New Order Transaction
--- 4. Order-Status Transaction (checked)
--- 5. Stock-Level Transaction (checked)
--- 6. Popular-Item Transaction (finished)
--- 7. Top-Balance Transaction (finished)
+-- 4. Order-Status Transaction (finished)
+-- 5. Stock-Level Transaction (finished)
+-- 6. Popular-Item Transaction (todo--)
+-- 7. Top-Balance Transaction (todo--)
 
 -- 1. New Order Transaction
 
@@ -12,29 +12,39 @@
 -- e.g. O,1,1,1771
 
 --CQL1
-select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from Customer
+select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from dbycql.Customer
 where C_W_ID = 'C_W_ID' and C_D_ID = 'C_D_ID' and C_ID = 'C_ID';
+--copy
+select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from dbycql.Customer
+where C_W_ID = %d and C_D_ID = %d and C_ID = %d
 
 --CQL2
-select O_ID, O_ENTRY_D, O_CARRIER_ID from Orders
+select O_ID, O_ENTRY_D, O_CARRIER_ID from dbycql.Orders
 where O_W_ID = 'C_W_ID' and O_D_ID = 'C_D_ID' and O_C_ID = 'C_ID'
 order by O_ID desc limit 1 allow filtering;
+--copy
+select O_ID, O_ENTRY_D, O_CARRIER_ID from dbycql.Orders
+where O_W_ID = %d and O_D_ID = %d and O_C_ID = %d
+order by O_ID desc limit 1 allow filtering
 -- 拿到'O_ID'
 
 --CQL3
-select OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D from OrderLine
+select OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D from dbycql.OrderLine
 where OL_W_ID = 'C_W_ID' and OL_D_ID = 'C_D_ID' and OL_O_ID = 'O_ID';
+--copy
+select OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D from dbycql.OrderLine
+where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d
 
 -- 5. Stock-Level Transaction
 -- e.g. S,1,1,14,27
 
 --CQL1
-select D_NEXT_O_ID from District 
+select D_NEXT_O_ID from dbycql.District
 where D_W_ID = 'W_ID' and D_ID = 'D_ID';
 -- 得到 N = D_NEXT_O_ID
 
 -- CQL2
-select OL_I_ID from OrderLine
+select OL_I_ID from dbycql.OrderLine
 where OL_W_ID = 'W_ID' and OL_D_ID = 'D_ID' and OL_O_ID >= 'N'-'L' and OL_O_ID < 'N'
 allow filtering;
 -- 得到'OL_I_ID'的集合IL (需要对'OL_I_ID'去重)
@@ -42,7 +52,7 @@ allow filtering;
 -- CQL3
 -- 设num = 0; 
 -- for OL_I_ID in IL:
-    select S_QUANTITY from Stock
+    select S_QUANTITY from dbycql.Stock
     where S_W_ID = 'W_ID' and S_I_ID = 'OL_I_ID'
     allow filtering;
     -- if S_QUANTITY < 'T', num += 1
