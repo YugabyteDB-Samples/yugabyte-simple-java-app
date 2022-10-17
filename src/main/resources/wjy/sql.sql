@@ -270,7 +270,7 @@ with last_l_orders as (
         and O_D_ID = 'D_ID'
         and O_ID >= 'N'-'L'
         and O_ID < 'N'
-),
+)
 
 select 
     t1.O_ID,
