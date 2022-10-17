@@ -33,7 +33,7 @@ public class SampleApp {
     private static final String TABLE_NAME = "DemoAccount";
     private static Connection conn;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         // 1. Establish a DB connection
         try {
             conn = DataSource.getConnection();

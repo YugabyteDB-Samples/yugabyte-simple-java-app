@@ -2,7 +2,6 @@ package common.transactionImpl;
 
 import common.SQLEnum;
 import common.Transaction;
-import org.omg.CORBA.INTERNAL;
 
 import java.sql.*;
 import java.util.ArrayList;
