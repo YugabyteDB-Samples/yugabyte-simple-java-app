@@ -195,7 +195,7 @@ where
     D_W_ID = 'W_ID'
     and D_ID = 'D_ID'
 
--- 得到 N =  D_NEXT_O_ID + 1
+-- 得到 N = D_NEXT_O_ID
 
 with last_l_ol_orders as(
     select 
@@ -246,37 +246,31 @@ where
 
 -- 6. Popular-Item Transaction
 
--- version 1 (无中间值)
+-- new version (无中间值)
 ---- SQL1 start
+select 
+    D_NEXT_O_ID
+from 
+    District
+where
+    D_W_ID = 'W_ID'
+    and D_ID = 'D_ID'
+
+-- 得到 N
+---- SQL1 end
+
+---- SQL2 start
 with last_l_orders as (
     select 
         *
     from 
-        (select 
-            *,
-            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank_order
-        from 
-            Orders
-        where
-            O_W_ID = 'W_ID'
-            and O_D_ID = 'D_ID'
-        ) t
-    where rank_order <= 'L'
+        Orders
+    where
+        O_W_ID = 'W_ID'
+        and O_D_ID = 'D_ID'
+        and O_ID >= 'N'-'L'
+        and O_ID < 'N'
 ),
-
-last_l_orders_items as (
-    select
-        *,
-        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank_item
-    from 
-        last_l_orders t1
-    left join 
-        OrderLine t2
-    on 
-        t1.O_W_ID = t2.OL_W_ID
-        and t1.O_D_ID = t2.OL_D_ID
-        and t1.O_ID = t2.OL_O_ID
-)
 
 select 
     t1.O_ID,
@@ -293,29 +287,25 @@ on
     and t1.O_D_ID = t2.C_D_ID
     and t1.O_ID = t2.C_ID
 ;
----- SQL1 end
+---- SQL2 end
 
----- SQL2 start
+---- SQL3 start
 with last_l_orders as (
-    select
+    select 
         *
-    from
-        (select
-            *,
-            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank_order
-        from
-            Orders
-        where
-            O_W_ID = 'W_ID'
-            and O_D_ID = 'D_ID'
-        ) t
-    where rank_order <= 'L'
+    from 
+        Orders
+    where
+        O_W_ID = 'W_ID'
+        and O_D_ID = 'D_ID'
+        and O_ID >= 'N'-'L'
+        and O_ID < 'N'
 ),
 
 last_l_orders_items as (
     select
         *,
-        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank_item
+        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank
     from
         last_l_orders t1
     left join
@@ -337,34 +327,30 @@ left join
 on 
     t1.OL_I_ID = t2.I_ID
 where 
-    t1.rank_item = 1
+    t1.rank = 1
 order by 
     t1.O_ID
 ;
----- SQL2 end
+---- SQL3 end
 
 
----- SQL3 start
+---- SQL4 start
 with last_l_orders as (
-    select
+    select 
         *
-    from
-        (select
-            *,
-            row_number()over(partition by O_W_ID, O_D_ID order by O_ID desc) as rank_order
-        from
-            Orders
-        where
-            O_W_ID = 'W_ID'
-            and O_D_ID = 'D_ID'
-        ) t
-    where rank_order <= 'L'
+    from 
+        Orders
+    where
+        O_W_ID = 'W_ID'
+        and O_D_ID = 'D_ID'
+        and O_ID >= 'N'-'L'
+        and O_ID < 'N'
 ),
 
 last_l_orders_items as (
     select
         *,
-        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank_item
+        rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank
     from
         last_l_orders t1
     left join
@@ -377,9 +363,9 @@ last_l_orders_items as (
 
 select
     t3.I_NAME,
-    count(t2.OL_I_ID) / 'L' * 100 as I_Percentage
+    count(t2.OL_I_ID) * 100 / 'L'  as I_Percentage
 from
-    (select distinct OL_I_ID from last_l_orders_items where rank_item = 1) t1
+    (select distinct OL_I_ID from last_l_orders_items where rank = 1) t1
 left join
     last_l_orders_items t2 
 on 
@@ -391,7 +377,7 @@ on
 group by 
     t3.I_NAME
 ;
----- SQL3 end
+---- SQL4 end
 
 -- version 2 (有中间值)
 
