@@ -6,7 +6,6 @@ import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import common.Transaction;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
@@ -16,41 +15,46 @@ public class RelatedCustomerTransaction extends Transaction {
     int C_ID;
 
     @Override
-    protected void YSQLExecute(Connection conn) throws SQLException {
-        Statement stmt = conn.createStatement();
-        stmt.executeQuery(String.format("with customer_orderline as(" +
-                "select " +
-                "t2.O_C_ID, " +
-                "t1.OL_W_ID, t1.OL_D_ID, t1.OL_O_ID, t1.OL_I_ID " +
-                "from orderLine t1 " +
-                "left join orders t2 " +
-                "on t1.OL_W_ID=t2.O_W_ID " +
-                "AND t1.OL_D_ID=t2.O_D_ID " +
-                "AND t1.OL_O_ID=t2.O_ID), " +
-                "target_orderline as(" +
-                "select " +
-                "* from customer_orderline " +
-                "where OL_W_ID=%d AND OL_D_ID=%d AND O_C_ID=%d), " +
-                "other_orderline as(" +
-                "select " +
-                "* from customer_orderline " +
-                "where OL_W_ID!=%d) " +
-                "select " +
-                "target_w_id,target_d_id,target_c_id, " +
-                "output_w_id,output_d_id,output_c_id " +
-                "from (" +
-                "select " +
-                "t1.OL_W_ID as target_w_id,t1.OL_D_ID as target_d_id,t1.O_C_ID as target_c_id, " +
-                "t2.OL_W_ID as output_w_id,t2.OL_D_ID as output_d_id,t2.O_C_ID as output_c_id, " +
-                "count(*) as common_cnt " +
-                "from " +
-                "target_orderline as t1 " +
-                "left join other_orderline as t2 " +
-                "on t1.OL_I_ID=t2.OL_I_ID " +
-                "group by t1.OL_W_ID, t1.OL_D_ID, t1.O_C_ID, " +
-                "t2.OL_W_ID, t2.OL_D_ID, t2.O_C_ID " +
-                ")a " +
-                "where a.common_cnt>=2", C_W_ID, C_D_ID, C_ID, C_W_ID));
+    protected void YSQLExecute(Connection conn) {
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.executeQuery(String.format("with customer_orderline as(" +
+                    "select " +
+                    "t2.O_C_ID, " +
+                    "t1.OL_W_ID, t1.OL_D_ID, t1.OL_O_ID, t1.OL_I_ID " +
+                    "from orderLine t1 " +
+                    "left join orders t2 " +
+                    "on t1.OL_W_ID=t2.O_W_ID " +
+                    "AND t1.OL_D_ID=t2.O_D_ID " +
+                    "AND t1.OL_O_ID=t2.O_ID), " +
+                    "target_orderline as(" +
+                    "select " +
+                    "* from customer_orderline " +
+                    "where OL_W_ID=%d AND OL_D_ID=%d AND O_C_ID=%d), " +
+                    "other_orderline as(" +
+                    "select " +
+                    "* from customer_orderline " +
+                    "where OL_W_ID!=%d) " +
+                    "select " +
+                    "target_w_id,target_d_id,target_c_id, " +
+                    "output_w_id,output_d_id,output_c_id " +
+                    "from (" +
+                    "select " +
+                    "t1.OL_W_ID as target_w_id,t1.OL_D_ID as target_d_id,t1.O_C_ID as target_c_id, " +
+                    "t2.OL_W_ID as output_w_id,t2.OL_D_ID as output_d_id,t2.O_C_ID as output_c_id, " +
+                    "count(*) as common_cnt " +
+                    "from " +
+                    "target_orderline as t1 " +
+                    "left join other_orderline as t2 " +
+                    "on t1.OL_I_ID=t2.OL_I_ID " +
+                    "group by t1.OL_W_ID, t1.OL_D_ID, t1.O_C_ID, " +
+                    "t2.OL_W_ID, t2.OL_D_ID, t2.O_C_ID " +
+                    ")a " +
+                    "where a.common_cnt>=2", C_W_ID, C_D_ID, C_ID, C_W_ID));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     protected void YCQLExecute(CqlSession session) {
