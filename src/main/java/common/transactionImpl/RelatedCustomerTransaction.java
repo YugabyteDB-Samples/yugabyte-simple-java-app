@@ -14,7 +14,6 @@ public class RelatedCustomerTransaction extends Transaction {
     int C_D_ID;
     int C_ID;
 
-    @Override
     protected void YSQLExecute(Connection conn) {
         try {
             Statement stmt = conn.createStatement();
@@ -57,7 +56,7 @@ public class RelatedCustomerTransaction extends Transaction {
 
     }
 
-    protected void YCQLExecute(CqlSession session) {
+    protected void execute(CqlSession session) {
         HashMap<List<Integer>, Integer> outputLine = new HashMap<List<Integer>, Integer>();
         SimpleStatement stmt = SimpleStatement.newInstance(String.format("select " +
                 "O_W_ID, " +

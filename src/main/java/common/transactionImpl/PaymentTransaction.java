@@ -15,7 +15,6 @@ public class PaymentTransaction extends Transaction {
     int C_ID;
     float PAYMENT;
 
-    @Override
     protected void YSQLExecute(Connection conn) {
         try {
             Statement stmt = conn.createStatement();
@@ -57,7 +56,7 @@ public class PaymentTransaction extends Transaction {
 
     }
 
-    protected void YCQLExecute(CqlSession session) {
+    protected void execute(CqlSession session) {
         SimpleStatement stmt = SimpleStatement.newInstance(String.format("UPDATE Warehouse SET W_YTD=W_YTD+%f WHERE W_ID=%d", PAYMENT, C_W_ID));
         session.execute(stmt);
         stmt = SimpleStatement.newInstance(String.format("UPDATE District SET D_YTD=D_YTD+%f WHERE D_W_ID=%d AND D_ID=%d", PAYMENT, C_W_ID, C_D_ID));

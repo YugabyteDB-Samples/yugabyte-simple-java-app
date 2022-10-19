@@ -15,6 +15,7 @@ import java.util.Iterator;
 public class DeliveryTransaction extends Transaction {
     int W_ID;
     int CARRIER_ID;
+
     protected void YSQLExecute(Connection conn) {
         try {
             Statement stmt = conn.createStatement();
@@ -64,7 +65,7 @@ public class DeliveryTransaction extends Transaction {
     }
 
 
-    protected void cqlExecute(CqlSession session) {
+    protected void execute(CqlSession session) {
         int o_ID = 0;
         int c_ID = 0;
         int max_Order = 0;
