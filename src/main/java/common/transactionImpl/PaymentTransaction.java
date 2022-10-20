@@ -57,15 +57,15 @@ public class PaymentTransaction extends Transaction {
     }
 
     protected void execute(CqlSession session) {
-        SimpleStatement stmt = SimpleStatement.newInstance(String.format("UPDATE Warehouse SET W_YTD=W_YTD+%f WHERE W_ID=%d", PAYMENT, C_W_ID));
+        SimpleStatement stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Warehouse_counter SET W_YTD=W_YTD+%d WHERE W_ID=%d", (int)PAYMENT, C_W_ID));
         session.execute(stmt);
-        stmt = SimpleStatement.newInstance(String.format("UPDATE District SET D_YTD=D_YTD+%f WHERE D_W_ID=%d AND D_ID=%d", PAYMENT, C_W_ID, C_D_ID));
+        stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.District_counter SET D_YTD=D_YTD+%d WHERE D_W_ID=%d AND D_ID=%d", (int)PAYMENT, C_W_ID, C_D_ID));
         session.execute(stmt);
-        stmt = SimpleStatement.newInstance(String.format("UPDATE Customer SET C_BALANCE=C_BALANCE-%f WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", PAYMENT, C_W_ID, C_D_ID, C_ID));
+        stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_BALANCE=C_BALANCE-%d WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", (int)PAYMENT, C_W_ID, C_D_ID, C_ID));
         session.execute(stmt);
-        stmt = SimpleStatement.newInstance(String.format("UPDATE Customer SET C_YTD_PAYMENT=C_YTD_PAYMENT+%f WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", PAYMENT, C_W_ID, C_D_ID, C_ID));
+        stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_YTD_PAYMENT=C_YTD_PAYMENT+%d WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", (int)PAYMENT, C_W_ID, C_D_ID, C_ID));
         session.execute(stmt);
-        stmt = SimpleStatement.newInstance(String.format("UPDATE Customer SET C_PAYMENT_CNT=C_PAYMENT_CNT+%d WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", 1, C_W_ID, C_D_ID, C_ID));
+        stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_PAYMENT_CNT=C_PAYMENT_CNT+%d WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", 1, C_W_ID, C_D_ID, C_ID));
         session.execute(stmt);
     }
 
