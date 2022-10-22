@@ -54,7 +54,16 @@ public class SampleApp {
         // 3. execute and report
         ExecuteManager manager = new ExecuteManager();
         if (DataSource.MODE.equals("YSQL")) {
-            manager.executeYSQLCommands(conn, list);
+            try {
+                manager.executeYSQLCommands(conn, list);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                try {
+                    conn.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
         else manager.executeYCQLCommands(conn, list);
         manager.report();
@@ -70,7 +79,7 @@ public class SampleApp {
             String[] firstLine = scanner.nextLine().split(",");
             String type = firstLine[0];
             Transaction transaction = null;
-            if (!type.equals(TransactionType.POPULAR_ITEM.type)) continue;
+            if (!type.equals(TransactionType.NEW_ORDER.type)) continue;
             if (type.equals(TransactionType.PAYMENT.type)) {
                 transaction = assemblePaymentTransaction(firstLine, scanner);
             } else if (type.equals(TransactionType.DELIVERY.type)) {
