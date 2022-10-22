@@ -1,7 +1,7 @@
 -- YCQL
 -- 1. New Order Transaction
--- 4. Order-Status Transaction (finished)
--- 5. Stock-Level Transaction (finished)
+-- 4. Order-Status Transaction (implemented)
+-- 5. Stock-Level Transaction (implemented)
 -- 6. Popular-Item Transaction (finished)
 -- 7. Top-Balance Transaction (finished)
 
@@ -90,12 +90,12 @@ where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' and O_ID >= 'N'-'L' and O_ID < 'N';
     -- 得到当前订单的所有 OL_I_ID (并用另一个集合(all_item_set)记录下所有订单的 OL_I_ID(去重))
     -- for every OL_I_ID:
         -- CQL6
-        select I_NAME from Item where I_ID = 'OL_I_ID';
+        select I_NAME from dbycql.Item where I_ID = 'OL_I_ID';
         -- 输出 I_NAME, MAX_OL_QUANTITY
 
 -- for every OL_I_ID in all_item_set:
     -- CQL7
-    select I_NAME from Item where I_ID = 'OL_I_ID';
+    select I_NAME from dbycql.Item where I_ID = 'OL_I_ID';
     -- CQL8
     select count(OL_I_ID) as I_NUM from dbycql.OrderLine_popular
     where OL_W_ID = 'W_ID' and OL_D_ID = 'D_ID' and OL_O_ID >= 'N'-'L' and OL_O_ID < 'N' and OL_I_ID = 'OL_I_ID';
