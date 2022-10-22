@@ -1,5 +1,7 @@
+import com.datastax.oss.driver.api.core.CqlSession;
 import common.Transaction;
 import common.TransactionType;
+import org.apache.tinkerpop.gremlin.structure.T;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -12,19 +14,17 @@ import java.util.List;
  * @Date 1/10/22 5:28 PM
  */
 public class ExecuteManager {
-    public void executeYSQLCommands(Connection conn, List<Transaction> list) throws SQLException {
-        if (list == null) return;
+    public void executeYSQL(Connection conn, List<Transaction> list) throws SQLException {
         System.out.printf("Execute YSQL transactions\n");
         for (Transaction transaction : list) {
             transaction.executeYSQL(conn);
         }
     }
 
-    public void executeYCQLCommands(Connection conn, List<Transaction> list) {
-        if (list == null) return;
+    public void executeYCQL(CqlSession session, List<Transaction> list) {
         System.out.printf("Execute YCQL transactions\n");
         for (Transaction transaction : list) {
-            transaction.executeYCQL(conn);
+            transaction.executeYCQL(session);
         }
     }
 

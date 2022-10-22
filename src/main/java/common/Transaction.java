@@ -1,5 +1,7 @@
 package common;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
@@ -16,18 +18,18 @@ public abstract class Transaction {
     long startTimeStamp;
 
     public void executeYSQL(Connection conn) throws SQLException {
-        beforeActuallyExecute();
+        beforeExecute();
         YSQLExecute(conn);
-        postActuallyExecute();
+        postExecute();
     }
 
-    public void executeYCQL(Connection conn) {
-        beforeActuallyExecute();
-        YCQLExecute(conn);
-        postActuallyExecute();
+    public void executeYCQL(CqlSession cqlSession) {
+        beforeExecute();
+        YCQLExecute(cqlSession);
+        postExecute();
     }
 
-    protected void beforeActuallyExecute() {
+    protected void beforeExecute() {
         startTimeStamp = System.currentTimeMillis();
         System.out.printf(transactionType.type + " Transaction begins\n");
     }
@@ -35,11 +37,12 @@ public abstract class Transaction {
     protected void YSQLExecute(Connection conn) throws SQLException {
 
     }
-    protected void YCQLExecute(Connection conn) {
+
+    protected void YCQLExecute(CqlSession cqlSession) {
 
     }
 
-    protected void postActuallyExecute() {
+    protected void postExecute() {
         long endTimeStamp = System.currentTimeMillis();
         long seconds = TimeUnit.MILLISECONDS.toMillis(endTimeStamp - startTimeStamp);
         System.out.printf("%s completes,takes %d milliseconds\n",transactionType, seconds);

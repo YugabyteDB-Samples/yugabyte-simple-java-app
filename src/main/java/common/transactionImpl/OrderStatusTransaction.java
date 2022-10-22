@@ -1,5 +1,6 @@
 package common.transactionImpl;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import common.Transaction;
 
 import java.sql.*;
@@ -18,7 +19,7 @@ public class OrderStatusTransaction extends Transaction {
     int C_ID;
 
     @Override
-    protected void YCQLExecute(Connection conn) {
+    protected void YCQLExecute(CqlSession cqlSession) {
     }
 
     @Override
