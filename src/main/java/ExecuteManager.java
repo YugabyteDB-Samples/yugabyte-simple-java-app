@@ -2,6 +2,7 @@ import common.Transaction;
 import common.TransactionType;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -11,7 +12,7 @@ import java.util.List;
  * @Date 1/10/22 5:28 PM
  */
 public class ExecuteManager {
-    public void executeYSQLCommands(Connection conn, List<Transaction> list) {
+    public void executeYSQLCommands(Connection conn, List<Transaction> list) throws SQLException {
         if (list == null) return;
         System.out.printf("Execute YSQL transactions\n");
         for (Transaction transaction : list) {
