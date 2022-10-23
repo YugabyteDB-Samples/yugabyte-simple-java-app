@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-
+// YSQL: 68878ms, YCQL: 280ms
 public class PaymentTransaction extends Transaction {
 
     int C_W_ID;
