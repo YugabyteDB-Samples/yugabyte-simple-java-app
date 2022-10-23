@@ -5,6 +5,7 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import common.SQLEnum;
 import common.Transaction;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -71,18 +72,31 @@ public class StockLevelTransaction extends Transaction {
 
     @Override
     protected void YSQLExecute(Connection conn) throws SQLException {
-        java.sql.ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction1.SQL, W_ID, D_ID));
-        int D_NEXT_O_ID = -1;
-        while (rs.next()) {
-            D_NEXT_O_ID = rs.getInt(1);
-            System.out.printf("D_NEXT_O_ID=%d\n", D_NEXT_O_ID);
-//                System.out.printf("D_NEXT_O_ID=%d\n",D_NEXT_O_ID);
+        conn.setAutoCommit(false);
+        try {
+            java.sql.ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction1.SQL, W_ID, D_ID));
+            int D_NEXT_O_ID = -1;
+            while (rs.next()) {
+                D_NEXT_O_ID = rs.getInt(1);
+                System.out.printf("D_NEXT_O_ID=%d\n", D_NEXT_O_ID);
+            }
+            int N = D_NEXT_O_ID + 1;
+            rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction2.SQL, W_ID, D_ID, N, L, N, T));
+            while (rs.next()) {
+                int cnt = rs.getInt(1);
+                System.out.printf("Count=%d\n", cnt);
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            if (conn != null) {
+                System.err.print("Transaction is being rolled back\n");
+                conn.rollback();
+            }
         }
-        int N = D_NEXT_O_ID + 1;
-        rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction2.SQL, W_ID, D_ID, N, L, N, T));
-        while (rs.next()) {
-            int cnt = rs.getInt(1);
-            System.out.printf("Count=%d\n", cnt);
+        finally {
+            conn.setAutoCommit(true);
         }
     }
 

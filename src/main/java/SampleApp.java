@@ -28,6 +28,7 @@ public class SampleApp {
             if (DataSource.MODE.equals(DataSource.YSQL)) {
                 System.out.println("Connecting to DB. Your mode is YSQL.");
                 conn = DataSource.getSQLConnection();
+                System.out.println("Isolation level=" + conn.getTransactionIsolation());
             } else {
                 System.out.println("Connecting to DB. Your mode is YCQL.");
                 cqlSession = DataSource.getCQLSession();
@@ -64,7 +65,7 @@ public class SampleApp {
 
 
     private static List<Transaction> readFile() throws FileNotFoundException {
-        String inputFileName = "src/main/resources/xact_files/0.txt";
+        String inputFileName = "src/main/resources/xact_files/2.txt";
         Scanner scanner = new Scanner(new File(inputFileName));
         List<Transaction> list = new ArrayList<>();
         while (scanner.hasNextLine()) {

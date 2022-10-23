@@ -34,7 +34,7 @@ public abstract class Transaction {
 
     protected void beforeExecute() {
         startTimeStamp = System.currentTimeMillis();
-        System.out.printf(transactionType.type + " Transaction begins\n");
+        System.out.printf(transactionType.type + " begins\n");
     }
 
     protected void YSQLExecute(Connection conn) throws SQLException {

@@ -3,6 +3,7 @@ package common.transactionImpl;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import common.Transaction;
 
 import java.math.BigDecimal;
@@ -107,25 +108,28 @@ public class PopularItemTransaction extends Transaction {
 
             // CQL8
             String CQL8 = String.format("select count(OL_I_ID) as I_NUM from dbycql.OrderLine_popular where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID >= %d-%d and OL_O_ID < %d and OL_I_ID = %d;", W_ID, D_ID, N, L, N, OL_I_ID);
-            rs = cqlSession.execute(CQL8);
+            SimpleStatement simpleStatement = SimpleStatement.builder(CQL8)
+                    .setExecutionProfileName("oltp")
+                    .build();
+            rs = cqlSession.execute(simpleStatement);
             // TODO: Exception in thread "main" com.datastax.oss.driver.api.core.DriverTimeoutException: Query timed out after PT2S
-            long I_NUM = rs.one().getInt(0);
+            long I_NUM = rs.one().getLong(0);
             double I_Percentage = I_NUM * 100.0 / L;
             System.out.printf("I_NAME=%s, I_Percentage=%f\n", I_NAME, I_Percentage);
         }
     }
 
     @Override
-    protected void YSQLExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) throws SQLException {
         System.out.printf("W_ID=%d,D_ID=%d,L=%d\n", W_ID, D_ID, L);
-
-        // SQL1
-        String SQL1 = "select D_NEXT_O_ID from District where D_W_ID = ? and D_ID = ?";
-        // select D_NEXT_O_ID from District where D_W_ID = 'W_ID' and D_ID = 'D_ID'
-        PreparedStatement statement = null;
-        java.sql.ResultSet rs = null;
-        int N = -1;
+        conn.setAutoCommit(false);
         try {
+            // SQL1
+            String SQL1 = "select D_NEXT_O_ID from District where D_W_ID = ? and D_ID = ?";
+            // select D_NEXT_O_ID from District where D_W_ID = 'W_ID' and D_ID = 'D_ID'
+            PreparedStatement statement = null;
+            java.sql.ResultSet rs = null;
+            int N = -1;
             statement = conn.prepareStatement(SQL1);
             statement.setInt(1, W_ID);
             statement.setInt(2, D_ID);
@@ -133,14 +137,10 @@ public class PopularItemTransaction extends Transaction {
             while (rs.next()) {
                 N = rs.getInt(1);
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
 
-        // SQL2
-        String SQL2 = "with last_l_orders as ( select * from Orders where O_W_ID = ? and O_D_ID = ? and O_ID >= ? - ? and O_ID < ? ) select t1.O_ID, t1.O_ENTRY_D, t2.C_FIRST, t2.C_MIDDLE, t2.C_LAST from last_l_orders t1 left join Customer t2 on t1.O_W_ID = t2.C_W_ID and t1.O_D_ID = t2.C_D_ID and t1.O_ID = t2.C_ID";
-        // with last_l_orders as ( select * from Orders where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' and O_ID >= 'N'-'L' and O_ID < 'N' ) select t1.O_ID, t1.O_ENTRY_D, t2.C_FIRST, t2.C_MIDDLE, t2.C_LAST from last_l_orders t1 left join Customer t2 on t1.O_W_ID = t2.C_W_ID and t1.O_D_ID = t2.C_D_ID and t1.O_ID = t2.C_ID ;
-        try {
+            // SQL2
+            String SQL2 = "with last_l_orders as ( select * from Orders where O_W_ID = ? and O_D_ID = ? and O_ID >= ? - ? and O_ID < ? ) select t1.O_ID, t1.O_ENTRY_D, t2.C_FIRST, t2.C_MIDDLE, t2.C_LAST from last_l_orders t1 left join Customer t2 on t1.O_W_ID = t2.C_W_ID and t1.O_D_ID = t2.C_D_ID and t1.O_ID = t2.C_ID";
+            // with last_l_orders as ( select * from Orders where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' and O_ID >= 'N'-'L' and O_ID < 'N' ) select t1.O_ID, t1.O_ENTRY_D, t2.C_FIRST, t2.C_MIDDLE, t2.C_LAST from last_l_orders t1 left join Customer t2 on t1.O_W_ID = t2.C_W_ID and t1.O_D_ID = t2.C_D_ID and t1.O_ID = t2.C_ID ;
             statement = conn.prepareStatement(SQL2);
             statement.setInt(1, W_ID);
             statement.setInt(2, D_ID);
@@ -156,14 +156,10 @@ public class PopularItemTransaction extends Transaction {
                 String C_LAST = rs.getString(5);
                 System.out.printf("O_ID=%d,O_ENTRY_D=%s,C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s\n", O_ID, O_ENTRY_D, C_FIRST, C_MIDDLE, C_LAST);
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
 
-        // SQL3
-        String SQL3 = "with last_l_orders as ( select * from Orders where O_W_ID = ? and O_D_ID = ? and O_ID >= ? - ? and O_ID < ? ), last_l_orders_items as ( select *, rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank from last_l_orders t1 left join OrderLine t2 on t1.O_W_ID = t2.OL_W_ID and t1.O_D_ID = t2.OL_D_ID and t1.O_ID = t2.OL_O_ID ) select t1.O_ID, t2.I_NAME, t1.OL_QUANTITY from last_l_orders_items t1 left join Item t2 on t1.OL_I_ID = t2.I_ID where t1.rank = 1 order by t1.O_ID";
-        // with last_l_orders as ( select * from Orders where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' and O_ID >= 'N'-'L' and O_ID < 'N' ), last_l_orders_items as ( select *, rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank from last_l_orders t1 left join OrderLine t2 on t1.O_W_ID = t2.OL_W_ID and t1.O_D_ID = t2.OL_D_ID and t1.O_ID = t2.OL_O_ID ) select t1.O_ID, t2.I_NAME, t1.OL_QUANTITY from last_l_orders_items t1 left join Item t2 on t1.OL_I_ID = t2.I_ID where t1.rank = 1 order by t1.O_ID ;
-        try {
+            // SQL3
+            String SQL3 = "with last_l_orders as ( select * from Orders where O_W_ID = ? and O_D_ID = ? and O_ID >= ? - ? and O_ID < ? ), last_l_orders_items as ( select *, rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank from last_l_orders t1 left join OrderLine t2 on t1.O_W_ID = t2.OL_W_ID and t1.O_D_ID = t2.OL_D_ID and t1.O_ID = t2.OL_O_ID ) select t1.O_ID, t2.I_NAME, t1.OL_QUANTITY from last_l_orders_items t1 left join Item t2 on t1.OL_I_ID = t2.I_ID where t1.rank = 1 order by t1.O_ID";
+            // with last_l_orders as ( select * from Orders where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' and O_ID >= 'N'-'L' and O_ID < 'N' ), last_l_orders_items as ( select *, rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank from last_l_orders t1 left join OrderLine t2 on t1.O_W_ID = t2.OL_W_ID and t1.O_D_ID = t2.OL_D_ID and t1.O_ID = t2.OL_O_ID ) select t1.O_ID, t2.I_NAME, t1.OL_QUANTITY from last_l_orders_items t1 left join Item t2 on t1.OL_I_ID = t2.I_ID where t1.rank = 1 order by t1.O_ID ;
             statement = conn.prepareStatement(SQL3);
             statement.setInt(1, W_ID);
             statement.setInt(2, D_ID);
@@ -177,14 +173,11 @@ public class PopularItemTransaction extends Transaction {
                 int OL_QUANTITY = rs.getInt(3);
                 System.out.printf("O_ID=%d,I_NAME=%s,OL_QUANTITY=%d\n", O_ID, I_NAME, OL_QUANTITY);
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
 
-        // SQL4
-        String SQL4 = "with last_l_orders as ( select * from Orders where O_W_ID = ? and O_D_ID = ? and O_ID >= ? - ? and O_ID < ? ), last_l_orders_items as ( select *, rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank from last_l_orders t1 left join OrderLine t2 on t1.O_W_ID = t2.OL_W_ID and t1.O_D_ID = t2.OL_D_ID and t1.O_ID = t2.OL_O_ID ) select t3.I_NAME, count(t2.OL_I_ID) * 100 / ? as I_Percentage from (select distinct OL_I_ID from last_l_orders_items where rank = 1) t1 left join last_l_orders_items t2 on t1.OL_I_ID = t2.OL_I_ID left join Item t3 on t1.OL_I_ID = t3.I_ID group by t3.I_NAME";
-        // with last_l_orders as ( select * from Orders where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' and O_ID >= 'N'-'L' and O_ID < 'N' ), last_l_orders_items as ( select *, rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank from last_l_orders t1 left join OrderLine t2 on t1.O_W_ID = t2.OL_W_ID and t1.O_D_ID = t2.OL_D_ID and t1.O_ID = t2.OL_O_ID ) select t3.I_NAME, count(t2.OL_I_ID) * 100 / 'L' as I_Percentage from (select distinct OL_I_ID from last_l_orders_items where rank = 1) t1 left join last_l_orders_items t2 on t1.OL_I_ID = t2.OL_I_ID left join Item t3 on t1.OL_I_ID = t3.I_ID group by t3.I_NAME ;
-        try {
+
+            // SQL4
+            String SQL4 = "with last_l_orders as ( select * from Orders where O_W_ID = ? and O_D_ID = ? and O_ID >= ? - ? and O_ID < ? ), last_l_orders_items as ( select *, rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank from last_l_orders t1 left join OrderLine t2 on t1.O_W_ID = t2.OL_W_ID and t1.O_D_ID = t2.OL_D_ID and t1.O_ID = t2.OL_O_ID ) select t3.I_NAME, count(t2.OL_I_ID) * 100 / ? as I_Percentage from (select distinct OL_I_ID from last_l_orders_items where rank = 1) t1 left join last_l_orders_items t2 on t1.OL_I_ID = t2.OL_I_ID left join Item t3 on t1.OL_I_ID = t3.I_ID group by t3.I_NAME";
+            // with last_l_orders as ( select * from Orders where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' and O_ID >= 'N'-'L' and O_ID < 'N' ), last_l_orders_items as ( select *, rank()over(partition by O_W_ID, O_D_ID, O_ID order by OL_QUANTITY desc) as rank from last_l_orders t1 left join OrderLine t2 on t1.O_W_ID = t2.OL_W_ID and t1.O_D_ID = t2.OL_D_ID and t1.O_ID = t2.OL_O_ID ) select t3.I_NAME, count(t2.OL_I_ID) * 100 / 'L' as I_Percentage from (select distinct OL_I_ID from last_l_orders_items where rank = 1) t1 left join last_l_orders_items t2 on t1.OL_I_ID = t2.OL_I_ID left join Item t3 on t1.OL_I_ID = t3.I_ID group by t3.I_NAME ;
             statement = conn.prepareStatement(SQL4);
             statement.setInt(1, W_ID);
             statement.setInt(2, D_ID);
@@ -198,8 +191,14 @@ public class PopularItemTransaction extends Transaction {
                 double percentage = rs.getDouble(2);
                 System.out.printf("I_NAME=%s,Percentage=%f\n", I_NAME, percentage);
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            if (conn != null) {
+                System.err.print("Transaction is being rolled back\n");
+                conn.rollback();
+            }
+        } finally {
+            conn.setAutoCommit(true);
         }
     }
 

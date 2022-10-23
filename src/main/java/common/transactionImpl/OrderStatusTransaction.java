@@ -45,7 +45,7 @@ public class OrderStatusTransaction extends Transaction {
         }
 
         // CQL2
-        String CQL2 = String.format("select O_ID, O_ENTRY_D, O_CARRIER_ID from dbycql.Orders where O_W_ID = %d and O_D_ID = %d and O_C_ID = %d order by O_ID desc limit 1 allow filtering", C_W_ID, C_D_ID, C_ID);
+        String CQL2 = String.format("select O_ID, O_ENTRY_D, O_CARRIER_ID from dbycql.Orders where O_W_ID = %d and O_D_ID = %d and O_C_ID = %d order by O_ID desc limit 1", C_W_ID, C_D_ID, C_ID);
         //select O_ID, O_ENTRY_D, O_CARRIER_ID from Orders where O_W_ID = 'C_W_ID' and O_D_ID = 'C_D_ID' and O_C_ID = 'C_ID' allow filtering order by O_ID desc limit 1
         rs = cqlSession.execute(CQL2);
         rows = rs.all();
@@ -84,6 +84,7 @@ public class OrderStatusTransaction extends Transaction {
 
     @Override
     protected void YSQLExecute(Connection conn) throws SQLException {
+        conn.setAutoCommit(false);
         try {
             String SQL1 = "select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from Customer where C_W_ID = ? and C_D_ID = ? and C_ID = ?";
             PreparedStatement statement = conn.prepareStatement(SQL1);
@@ -138,8 +139,15 @@ public class OrderStatusTransaction extends Transaction {
                     System.out.printf("OL_I_ID=%d,OL_SUPPLY_W_ID=%d,OL_QUANTITY=%d,OL_AMOUNT=%f,OL_DELIVERY_D=%s\n", OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D);
                 }
             }
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            if (conn != null) {
+                System.err.print("Transaction is being rolled back\n");
+                conn.rollback();
+            }
+        } finally {
+            conn.setAutoCommit(true);
         }
     }
 
