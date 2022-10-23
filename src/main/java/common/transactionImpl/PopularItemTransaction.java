@@ -25,7 +25,7 @@ public class PopularItemTransaction extends Transaction {
     int L;
 
     @Override
-    protected void execute(CqlSession cqlSession) {
+    protected void YCQLExecute(CqlSession cqlSession) {
         ResultSet rs = null;
         List<Row> rows = null;
 
@@ -123,7 +123,7 @@ public class PopularItemTransaction extends Transaction {
         String SQL1 = "select D_NEXT_O_ID from District where D_W_ID = ? and D_ID = ?";
         // select D_NEXT_O_ID from District where D_W_ID = 'W_ID' and D_ID = 'D_ID'
         PreparedStatement statement = null;
-        ResultSet rs = null;
+        java.sql.ResultSet rs = null;
         int N = -1;
         try {
             statement = conn.prepareStatement(SQL1);

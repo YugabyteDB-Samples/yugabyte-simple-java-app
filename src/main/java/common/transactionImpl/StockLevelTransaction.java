@@ -3,9 +3,12 @@ package common.transactionImpl;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import common.SQLEnum;
 import common.Transaction;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +33,7 @@ public class StockLevelTransaction extends Transaction {
     }
 
     @Override
-    protected void execute(CqlSession cqlSession) {
+    protected void YCQLExecute(CqlSession cqlSession) {
         ResultSet rs = null;
         List<Row> rows = null;
 
@@ -63,6 +66,23 @@ public class StockLevelTransaction extends Transaction {
             if (d < T) num++;
         }
         System.out.println("num=" + num);
+    }
+
+    @Override
+    protected void YSQLExecute(Connection conn) throws SQLException {
+        java.sql.ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction1.SQL, W_ID, D_ID));
+        int D_NEXT_O_ID = -1;
+        while (rs.next()) {
+            D_NEXT_O_ID = rs.getInt(1);
+            System.out.printf("D_NEXT_O_ID=%d\n", D_NEXT_O_ID);
+//                System.out.printf("D_NEXT_O_ID=%d\n",D_NEXT_O_ID);
+        }
+        int N = D_NEXT_O_ID + 1;
+        rs = conn.createStatement().executeQuery(String.format(SQLEnum.StockLevelTransaction2.SQL, W_ID, D_ID, N, L, N, T));
+        while (rs.next()) {
+            int cnt = rs.getInt(1);
+            System.out.printf("Count=%d\n", cnt);
+        }
     }
 
     public int getW_ID() {

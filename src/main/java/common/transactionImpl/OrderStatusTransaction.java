@@ -1,12 +1,15 @@
 package common.transactionImpl;
 
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import common.Transaction;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,14 +82,14 @@ public class OrderStatusTransaction extends Transaction {
     }
 
     @Override
-    protected void YSQLExecute(Connection conn) {
+    protected void YSQLExecute(Connection conn) throws SQLException {
         try {
             String SQL1 = "select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from Customer where C_W_ID = ? and C_D_ID = ? and C_ID = ?";
             PreparedStatement statement = conn.prepareStatement(SQL1);
             statement.setInt(1, C_W_ID);
             statement.setInt(2, C_D_ID);
             statement.setInt(3, C_ID);
-            ResultSet rs = statement.executeQuery();
+            java.sql.ResultSet rs = statement.executeQuery();
             while (rs.next()) {
                 String C_FIRST = rs.getString(1);
                 String C_MIDDLE = rs.getString(2);

@@ -3,6 +3,9 @@ package common.transactionImpl;
 import com.datastax.oss.driver.api.core.CqlSession;
 import common.Transaction;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 
 public class PaymentTransaction extends Transaction {
     int C_W_ID;
@@ -11,8 +14,13 @@ public class PaymentTransaction extends Transaction {
     float PAYMENT;
 
     @Override
-    protected void execute(CqlSession cqlSession) {
+    protected void YSQLExecute(Connection conn) throws SQLException {
+        //TODO : merge payment_cql
+    }
 
+    @Override
+    protected void YCQLExecute(CqlSession cqlSession) {
+        //TODO
     }
 
     public int getC_W_ID() {

@@ -3,9 +3,12 @@ package common.transactionImpl;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
+import common.SQLEnum;
 import common.Transaction;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -16,7 +19,7 @@ import java.util.List;
  */
 public class TopBalanceTransaction extends Transaction {
     @Override
-    protected void execute(CqlSession cqlSession) {
+    protected void YCQLExecute(CqlSession cqlSession) {
         ResultSet rs = null;
         List<Row> rows = null;
 
@@ -75,5 +78,19 @@ public class TopBalanceTransaction extends Transaction {
         // TODO
         // Exception in thread "main" com.datastax.oss.driver.api.core.servererrors.InvalidQueryException: Duplicate Object. Object 'dbycql.customer_balance_top10' already exists
         cqlSession.execute(CQL7);
+    }
+
+    @Override
+    protected void YSQLExecute(Connection conn) throws SQLException {
+        java.sql.ResultSet rs = conn.createStatement().executeQuery(String.format(SQLEnum.TopBalanceTransaction1.SQL));
+        while (rs.next()) {
+            String C_FIRST = rs.getString(1);
+            String C_MIDDLE = rs.getString(2);
+            String C_LAST = rs.getString(3);
+            double C_BALANCE = rs.getDouble(4);
+            String W_NAME = rs.getString(5);
+            String D_NAME = rs.getString(6);
+            System.out.printf("C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s,C_BALANCE=%f,W_NAME=%s,D_NAME=%s\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE, W_NAME, D_NAME);
+        }
     }
 }

@@ -16,7 +16,7 @@ public class RelatedCustomerTransaction extends Transaction {
     int C_ID;
 
     @Override
-    protected void execute(CqlSession session) {
+    protected void YCQLExecute(CqlSession session) {
         HashMap<List<Integer>, Integer> outputLine = new HashMap<List<Integer>, Integer>();
         SimpleStatement stmt = SimpleStatement.newInstance(String.format("select " +
                 "O_W_ID, " +
