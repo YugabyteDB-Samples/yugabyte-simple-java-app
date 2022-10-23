@@ -20,6 +20,7 @@ import java.util.List;
  * @Version V1.0
  * @Date 2/10/22 11:06 AM
  */
+// YSQL:72008ms , YCQL: 200ms
 public class OrderStatusTransaction extends Transaction {
     int C_W_ID;
     int C_D_ID;
