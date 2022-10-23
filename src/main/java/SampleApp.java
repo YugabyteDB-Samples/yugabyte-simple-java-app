@@ -7,9 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class SampleApp {
     private static Connection conn;
@@ -73,7 +71,6 @@ public class SampleApp {
             String[] firstLine = scanner.nextLine().split(",");
             String type = firstLine[0];
             Transaction transaction = null;
-            if (!type.equals(TransactionType.PAYMENT.type)) continue;
             if (type.equals(TransactionType.PAYMENT.type)) {
                 transaction = assemblePaymentTransaction(firstLine, scanner);
             } else if (type.equals(TransactionType.DELIVERY.type)) {
