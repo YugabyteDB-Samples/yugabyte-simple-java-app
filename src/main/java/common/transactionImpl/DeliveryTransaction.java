@@ -9,13 +9,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Date;
 import java.util.Iterator;
 
 public class DeliveryTransaction extends Transaction {
     int W_ID;
     int CARRIER_ID;
-    protected void actuallyExecute(Connection conn) throws SQLException {
+
+    @Override
+    protected void YSQLExecute(Connection conn) throws SQLException {
         Statement stmt = conn.createStatement();
         // 获取到每个district对应的最小order_number
         ResultSet rs = stmt.executeQuery(String.format("select " +
@@ -59,7 +60,8 @@ public class DeliveryTransaction extends Transaction {
     }
 
 
-    protected void cqlExecute(CqlSession session) {
+    @Override
+    protected void YCQLExecute(CqlSession session) {
         int o_ID = 0;
         int c_ID = 0;
         int max_Order = 0;
