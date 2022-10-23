@@ -19,6 +19,7 @@ import java.util.Set;
  * @Version V1.0
  * @Date 2/10/22 11:19 AM
  */
+// YSQL: 43151ms, YCQL: 17213ms
 public class StockLevelTransaction extends Transaction {
     int W_ID;
     int D_ID;
@@ -39,14 +40,14 @@ public class StockLevelTransaction extends Transaction {
 
         // CQL1
         String CQL1 = String.format("select D_NEXT_O_ID from dbycql.District where D_W_ID = %d and D_ID = %d", W_ID, D_ID);
-        System.out.println(CQL1);
+//        System.out.println(CQL1);
         //select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from Customer where C_W_ID = 'C_W_ID' and C_D_ID = 'C_D_ID' and C_ID = 'C_ID' ;
         rs = cqlSession.execute(CQL1);
         int N = rs.one().getInt(0);
 
         // CQL2
         String CQL2 = String.format("select OL_I_ID from dbycql.OrderLine where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID >= %d - %d and OL_O_ID < %d allow filtering", W_ID, D_ID, N, L, N);
-        System.out.println(CQL2);
+//        System.out.println(CQL2);
         Set<Integer> OL_I_IDs = new HashSet<>();
         rs = cqlSession.execute(CQL2);
         rows = rs.all();
