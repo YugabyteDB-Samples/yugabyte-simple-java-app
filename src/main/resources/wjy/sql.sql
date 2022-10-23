@@ -35,8 +35,7 @@ create table new_order_info
 insert into Orders (O_ID, O_D_ID, O_W_ID, O_C_ID, O_ENTRY_D, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL)
 values ('N', 'D_ID', 'W_ID', 'C_ID', 'current_time', NULL, 'M', 'NO_ALL_LOCAL'); 
 
--- step4
-TOTAL_AMOUNT = 0
+-- delete step4 
 
 --step5 - Stock
 update Stock
