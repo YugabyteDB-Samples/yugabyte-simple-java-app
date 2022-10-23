@@ -108,8 +108,8 @@ public class PopularItemTransaction extends Transaction {
             // CQL8
             String CQL8 = String.format("select count(OL_I_ID) as I_NUM from dbycql.OrderLine_popular where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID >= %d-%d and OL_O_ID < %d and OL_I_ID = %d;", W_ID, D_ID, N, L, N, OL_I_ID);
             rs = cqlSession.execute(CQL8);
-            // Exception in thread "main" com.datastax.oss.driver.api.core.DriverTimeoutException: Query timed out after PT2S
-            int I_NUM = rs.one().getInt(0);
+            // TODO: Exception in thread "main" com.datastax.oss.driver.api.core.DriverTimeoutException: Query timed out after PT2S
+            long I_NUM = rs.one().getInt(0);
             double I_Percentage = I_NUM * 100.0 / L;
             System.out.printf("I_NAME=%s, I_Percentage=%f\n", I_NAME, I_Percentage);
         }
