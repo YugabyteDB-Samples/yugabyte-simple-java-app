@@ -1,5 +1,9 @@
 package common.transactionImpl;
 
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
 import common.Transaction;
 
 import java.sql.*;
@@ -141,6 +145,18 @@ public class NewOrderTransaction extends Transaction {
         String SQL11 = "drop table new_order_info;";
         statement = conn.prepareStatement(SQL11);
         statement.executeUpdate();
+    }
+
+    @Override
+    protected void YCQLexecute(CqlSession cqlSession) {
+        String cql = "SELECT * FROM dbycql.Customer Limit 20";
+        PreparedStatement preparedStatement = cqlSession.prepare(cql);
+        ResultSet resultSet = cqlSession.execute(cql);
+        List<Row> rows = resultSet.all();
+        System.out.printf("Get %d result\n",rows.size());
+        for (Row row : rows) {
+            System.out.println(row);
+        }
     }
 
     public int getW_ID() {
