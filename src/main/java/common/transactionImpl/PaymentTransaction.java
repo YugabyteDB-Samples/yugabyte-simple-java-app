@@ -57,6 +57,7 @@ public class PaymentTransaction extends Transaction {
     }
 
     protected void execute(CqlSession session) {
+        System.out.println("执行payment cql中..");
         SimpleStatement stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Warehouse_counter SET W_YTD=W_YTD+%d WHERE W_ID=%d", (int)PAYMENT, C_W_ID));
         session.execute(stmt);
         stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.District_counter SET D_YTD=D_YTD+%d WHERE D_W_ID=%d AND D_ID=%d", (int)PAYMENT, C_W_ID, C_D_ID));
