@@ -13,17 +13,25 @@ import java.util.*;
  * @Date 1/10/22 5:28 PM
  */
 public class ExecuteManager {
-    private Map<TransactionType, Statistics> map;
     private Set<TransactionType> skipSet;
+    private List<Statistics> transactionTypeList;
 
     public ExecuteManager() {
-        map = new HashMap<>();
-        skipSet = new HashSet<>();
-        for (TransactionType transactionType : TransactionType.values()) {
-            map.put(transactionType, new Statistics(transactionType));
-        }
-//        skipSet.add(TransactionType.DELIVERY); // 7 minutes
-        skipSet.add(TransactionType.NEW_ORDER); // not implemented yet
+        transactionTypeList = new ArrayList<>(8);
+        skipSet = new HashSet<>(8);
+        System.out.println(TransactionType.values());
+        transactionTypeList.add(new Statistics(TransactionType.NEW_ORDER));
+        transactionTypeList.add(new Statistics(TransactionType.PAYMENT));
+        transactionTypeList.add(new Statistics(TransactionType.DELIVERY));
+        transactionTypeList.add(new Statistics(TransactionType.ORDER_STATUS));
+        transactionTypeList.add(new Statistics(TransactionType.STOCK_LEVEL));
+        transactionTypeList.add(new Statistics(TransactionType.POPULAR_ITEM));
+        transactionTypeList.add(new Statistics(TransactionType.TOP_BALANCE));
+        transactionTypeList.add(new Statistics(TransactionType.RELATED_CUSTOMER));
+
+        skipSet.add(TransactionType.NEW_ORDER);
+        skipSet.add(TransactionType.DELIVERY);
+        skipSet.add(TransactionType.RELATED_CUSTOMER);
     }
 
     public void executeYSQL(Connection conn, List<Transaction> list) throws SQLException {
@@ -31,7 +39,7 @@ public class ExecuteManager {
         for (Transaction transaction : list) {
             if (skipSet.contains(transaction.getTransactionType())) continue;
             long executionTime = transaction.executeYSQL(conn);
-            map.get(transaction.getTransactionType()).addNewData(executionTime);
+            transactionTypeList.get(transaction.getTransactionType().index).addNewData(executionTime);
             report();
         }
     }
@@ -41,15 +49,15 @@ public class ExecuteManager {
         for (Transaction transaction : list) {
             if (skipSet.contains(transaction.getTransactionType())) continue;
             long executionTime = transaction.executeYCQL(session);
-            map.get(transaction.getTransactionType()).addNewData(executionTime);
+            transactionTypeList.get(transaction.getTransactionType().index).addNewData(executionTime);
             report();
         }
     }
 
     public void report() {
         System.out.println("---Statistics start---");
-        for (Map.Entry<TransactionType, Statistics> entry : map.entrySet()) {
-            System.out.println(entry.getValue());
+        for (Statistics statistics : transactionTypeList) {
+            System.out.println(statistics);
         }
         System.out.println("---Statistics end---");
     }
