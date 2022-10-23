@@ -15,18 +15,21 @@ import java.util.concurrent.TimeUnit;
 public abstract class Transaction {
     // define template method for transaction execution
     TransactionType transactionType;
-    long startTimeStamp;
+    private long startTimeStamp;
+    private long executionTime;
 
-    public void executeYSQL(Connection conn) throws SQLException {
+    public long executeYSQL(Connection conn) throws SQLException {
         beforeExecute();
         YSQLExecute(conn);
         postExecute();
+        return executionTime;
     }
 
-    public void executeYCQL(CqlSession cqlSession) {
+    public long executeYCQL(CqlSession cqlSession) {
         beforeExecute();
         YCQLExecute(cqlSession);
         postExecute();
+        return executionTime;
     }
 
     protected void beforeExecute() {
@@ -44,8 +47,9 @@ public abstract class Transaction {
 
     protected void postExecute() {
         long endTimeStamp = System.currentTimeMillis();
-        long seconds = TimeUnit.MILLISECONDS.toMillis(endTimeStamp - startTimeStamp);
-        System.out.printf("%s completes,takes %d milliseconds\n",transactionType, seconds);
+        long millis = TimeUnit.MILLISECONDS.toMillis(endTimeStamp - startTimeStamp);
+        executionTime = millis;
+        System.out.printf("%s completes,takes %d milliseconds\n",transactionType, millis);
     }
 
     public TransactionType getTransactionType() {

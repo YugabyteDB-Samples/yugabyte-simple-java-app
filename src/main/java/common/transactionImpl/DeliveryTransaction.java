@@ -54,7 +54,7 @@ public class DeliveryTransaction extends Transaction {
         for (int i = 0; i < 10; i++) {
             stmt.execute((String.format("UPDATE Orders SET O_CARRIER_ID=%d WHERE O_W_ID=%d and O_D_ID=%d and O_ID=%d", CARRIER_ID, tmpList[i][0], tmpList[i][1], tmpList[i][2])));
             stmt.execute(String.format("UPDATE OrderLine SET OL_DELIVERY_D=(SELECT CURRENT_TIMESTAMP) WHERE OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d", tmpList[i][0], tmpList[i][1], tmpList[i][2]));
-            stmt.execute(String.format("UPDATE Customer SET C_BALANCE=C_BALANCE+%d WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", tmpList[i][4], tmpList[i][0], tmpList[i][1], tmpList[i][3]));
+            stmt.execute(String.format("UPDATE Customer SET C_BALANCE=C_BALANCE+%d WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", tmpList[i][3], tmpList[i][0], tmpList[i][1], tmpList[i][2]));
             stmt.execute(String.format("UPDATE Customer SET C_DELIVERY_CNT=C_DELIVERY_CNT+%d WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", 1, tmpList[i][0], tmpList[i][1], tmpList[i][2]));
         }
     }
