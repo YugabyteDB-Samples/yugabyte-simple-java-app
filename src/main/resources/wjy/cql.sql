@@ -34,6 +34,10 @@ update District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = 'W_ID' and D_ID
     -- DIST_INFO = 'S_DIST_' + 'D_ID' (string 连接)
     insert into dbycql.OrderLine (OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER, OL_I_ID, OL_DELIVERY_D, OL_AMOUNT, OL_SUPPLY_W_ID, OL_QUANTITY, OL_DIST_INFO)
     values ('W_ID', 'D_ID', 'N', i, 'OL_I_ID', NULL, 'ITEM_AMOUNT', 'OL_SUPPLY_W_ID', 'OL_QUANTITY', 'DIST_INFO');
+    
+    -- update dbycql.customer_item
+    insert into dbycql.customer_item (CI_W_ID, CI_D_ID, CI_C_ID, CI_O_ID, CI_I_ID, CI_I_NUMBER)
+    values ('W_ID', 'D_ID', 'C_ID', 'N', 'OL_I_ID', i);
 
     -- 输出结果 i, I_NAME, 'OL_SUPPLY_W_ID', 'OL_QUANTITY', ITEM_AMOUNT, ADJUSTED_QTY
 
