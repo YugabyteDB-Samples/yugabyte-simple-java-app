@@ -36,7 +36,7 @@ public class TopBalanceTransaction extends Transaction {
         for (int C_W_ID = 1; C_W_ID <= 10; C_W_ID++) {
             for (int C_D_ID = 1; C_D_ID <= 10; C_D_ID++) {
                 // CQL2
-                String CQL2 = String.format("select C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from dbycql.customer_balance where C_W_ID = %d and C_D_ID = %d limit 10;", C_W_ID, C_D_ID);
+                String CQL2 = String.format("select C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from dbycql.customer where C_W_ID = %d and C_D_ID = %d limit 10;", C_W_ID, C_D_ID);
 //                System.out.println(CQL2);
                 rs = cqlSession.execute(CQL2);
                 rows = rs.all();
@@ -88,7 +88,7 @@ public class TopBalanceTransaction extends Transaction {
             System.out.printf("C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s,C_BALANCE=%f,W_NAME=%s,D_NAME=%s\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE, W_NAME, D_NAME);
         }
         // CQL7
-        String CQL7 = String.format("DROP TABLE dbycql.customer_balance_top10;");
+        String CQL7 = String.format("DROP TABLE IF EXISTS dbycql.customer_balance_top10;");
 //        System.out.println(CQL7);
         simpleStatement = SimpleStatement.builder(CQL7)
                 .setExecutionProfileName("oltp")
