@@ -9,7 +9,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.util.Iterator;
+import java.util.Objects;
 
 public class DeliveryTransaction extends Transaction {
     int W_ID;
@@ -73,65 +75,71 @@ public class DeliveryTransaction extends Transaction {
     }
 
 
-    @Override
     protected void YCQLExecute(CqlSession session) {
         int o_ID = 0;
         int c_ID = 0;
         int max_Order = 0;
-        int sum_Amt = 0;
-        for (int d_ID = 1; d_ID <= 10; d_ID++) {
+        float sum_Amt = 0;
+        for (int d_ID = 1;  d_ID <= 10; d_ID ++) {
             // 第一个cql
-            SimpleStatement stmt = SimpleStatement.newInstance(String.format("select" +
+            SimpleStatement stmt = SimpleStatement.newInstance(String.format("select " +
                     "O_ID," +
                     "O_C_ID " +
-                    "from order_dev " +
-                    "where WHERE O_W_ID=%d and O_CARRIER_ID is null and O_D_ID=%d" +
+                    "from dbycql.order_mv " +
+                    "where O_W_ID=%d and O_CARRIER_ID = 0 and O_D_ID=%d " +
                     "LIMIT 1 allow filtering", W_ID, d_ID));
             com.datastax.oss.driver.api.core.cql.ResultSet rs = session.execute(stmt);
             Iterator<Row> rsIterator = rs.iterator();
             while (rsIterator.hasNext()) {
                 Row row = rsIterator.next();
-                o_ID = row.getInt(1);
-                c_ID = row.getInt(2);
+                o_ID = row.getInt(0);
+                c_ID = row.getInt(1);
             }
-            stmt = SimpleStatement.newInstance(String.format("UPDATE Order SET O_CARRIER_ID=%d " +
+            stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Orders SET O_CARRIER_ID=%d " +
                     "WHERE O_W_ID=%d and O_D_ID=%d and O_ID=%d", CARRIER_ID, W_ID, d_ID, o_ID));
             session.execute(stmt);
             // 第二个cql
             stmt = SimpleStatement.newInstance(String.format("select max(OL_NUMBER) as max_order " +
-                    "from OrderLine " +
+                    "from dbycql.OrderLine " +
                     "where OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d", W_ID, d_ID, o_ID));
             rs = session.execute(stmt);
             rsIterator = rs.iterator();
             while (rsIterator.hasNext()) {
                 Row row = rsIterator.next();
-                max_Order = row.getInt(1);
+                max_Order = row.getInt(0);
             }
             // 第三个cql
             for (int ol_num = 1; ol_num < max_Order; ol_num++) {
-                stmt = SimpleStatement.newInstance(String.format("UPDATE OrderLine SET OL_DELIVERY_D=(SELECT CURRENT_TIMESTAMP) " +
-                        "WHERE OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d and OL_NUMBER=%d", W_ID, d_ID, o_ID, ol_num));
-                session.execute(stmt);
+//                stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.OrderLine SET OL_DELIVERY_D=toTimestamp(now()) " +
+//                        "WHERE OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d and OL_NUMBER=%d", W_ID, d_ID, o_ID, ol_num));
+//                session.execute(stmt);
+                String third_cql = String.format("UPDATE dbycql.OrderLine SET OL_DELIVERY_D=toTimestamp(now()) " +
+                        "WHERE OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d and OL_NUMBER=%d", W_ID, d_ID, o_ID, ol_num);
+                SimpleStatement simpleStatement = SimpleStatement.builder(third_cql)
+                        .setExecutionProfileName("oltp").setTimeout(Duration.ofSeconds(30))
+                        .build();
+                session.execute(simpleStatement);
             }
             // 第四个cql
             stmt = SimpleStatement.newInstance(String.format("SELECT " +
                     "SUM(OL_AMOUNT) AS SUM_AMT " +
-                    "FROM OrderLine " +
+                    "FROM dbycql.OrderLine " +
                     "WHERE OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d " +
                     "allow filtering", W_ID, d_ID, o_ID));
             rs = session.execute(stmt);
             rsIterator = rs.iterator();
             while (rsIterator.hasNext()) {
                 Row row = rsIterator.next();
-                sum_Amt = row.getInt(1);
+                sum_Amt = Objects.requireNonNull(row.getBigDecimal("SUM_AMT")).floatValue();
             }
             // 第五个cql
-            stmt = SimpleStatement.newInstance(String.format("UPDATE Customer SET C_BALANCE=C_BALANCE+%d " +
-                    "WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", sum_Amt, W_ID, d_ID, c_ID));
+            stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_BALANCE=C_BALANCE+%d " +
+                    "WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", (int)sum_Amt, W_ID, d_ID, c_ID));
             session.execute(stmt);
             // 第六个cql
-            stmt = SimpleStatement.newInstance(String.format("UPDATE Customer SET C_DELIVERY_CNT=C_DELIVERY_CNT+%d" +
+            stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_DELIVERY_CNT=C_DELIVERY_CNT+%d" +
                     "WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", 1, W_ID, d_ID, c_ID));
+            session.execute(stmt);
         }
     }
 

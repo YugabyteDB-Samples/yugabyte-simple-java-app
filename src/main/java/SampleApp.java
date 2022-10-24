@@ -65,13 +65,14 @@ public class SampleApp {
 
 
     private static List<Transaction> readFile() throws FileNotFoundException {
-        String inputFileName = "src/main/resources/xact_files/2.txt";
+        String inputFileName = "src/main/resources/xact_files/0.txt";
         Scanner scanner = new Scanner(new File(inputFileName));
         List<Transaction> list = new ArrayList<>();
         while (scanner.hasNextLine()) {
             String[] firstLine = scanner.nextLine().split(",");
             String type = firstLine[0];
             Transaction transaction = null;
+            if (!type.equals(TransactionType.DELIVERY.type)) continue;
             if (type.equals(TransactionType.PAYMENT.type)) {
                 transaction = assemblePaymentTransaction(firstLine, scanner);
             } else if (type.equals(TransactionType.DELIVERY.type)) {

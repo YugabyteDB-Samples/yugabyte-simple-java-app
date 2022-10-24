@@ -30,8 +30,8 @@ public class ExecuteManager {
         transactionTypeList.add(new Statistics(TransactionType.RELATED_CUSTOMER));
 
         skipSet.add(TransactionType.NEW_ORDER);
-        skipSet.add(TransactionType.DELIVERY);
-        skipSet.add(TransactionType.RELATED_CUSTOMER);
+//        skipSet.add(TransactionType.DELIVERY);
+//        skipSet.add(TransactionType.RELATED_CUSTOMER);
     }
 
     public void executeYSQL(Connection conn, List<Transaction> list) throws SQLException {
