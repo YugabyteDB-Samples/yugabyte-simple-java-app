@@ -78,7 +78,6 @@ public class PopularItemTransaction extends Transaction {
             BigDecimal MAX_OL_QUANTITY = onerow.getBigDecimal(3);
 
             // CQL5
-            // TODO:MAX_OL_QUANTITY 是浮点数，取出来后，再次查询，是否会出现精度损失呢？
             String CQL5 = String.format("select OL_W_ID, OL_D_ID, OL_O_ID, OL_I_ID from dbycql.OrderLine_popular where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d and OL_QUANTITY = %f;", W_ID, D_ID, OL_O_ID, MAX_OL_QUANTITY);
             rs = cqlSession.execute(CQL5);
             List<Integer> OL_I_IDs = new ArrayList<>();
@@ -112,7 +111,6 @@ public class PopularItemTransaction extends Transaction {
                     .setExecutionProfileName("oltp")
                     .build();
             rs = cqlSession.execute(simpleStatement);
-            // TODO: Exception in thread "main" com.datastax.oss.driver.api.core.DriverTimeoutException: Query timed out after PT2S
             long I_NUM = rs.one().getLong(0);
             double I_Percentage = I_NUM * 100.0 / L;
             System.out.printf("I_NAME=%s, I_Percentage=%f\n", I_NAME, I_Percentage);
