@@ -189,6 +189,8 @@ public class PopularItemTransaction extends Transaction {
                 double percentage = rs.getDouble(2);
                 System.out.printf("I_NAME=%s,Percentage=%f%%\n", I_NAME, percentage);
             }
+
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {

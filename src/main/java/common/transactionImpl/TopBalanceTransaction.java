@@ -111,6 +111,7 @@ public class TopBalanceTransaction extends Transaction {
                 String D_NAME = rs.getString(6);
                 System.out.printf("C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s,C_BALANCE=%f,W_NAME=%s,D_NAME=%s\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE, W_NAME, D_NAME);
             }
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
