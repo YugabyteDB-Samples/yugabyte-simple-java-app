@@ -16,6 +16,7 @@ public class RelatedCustomerTransaction extends Transaction {
     int C_ID;
 
     protected void YSQLExecute(Connection conn) throws SQLException {
+        conn.setAutoCommit(true);
         Statement stmt = conn.createStatement();
         stmt.executeQuery(String.format("with target_orderline as(" +
                 "select " +

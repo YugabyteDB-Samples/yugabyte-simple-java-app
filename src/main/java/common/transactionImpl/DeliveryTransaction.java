@@ -60,7 +60,6 @@ public class DeliveryTransaction extends Transaction {
                 stmt.execute(String.format("UPDATE Customer SET C_DELIVERY_CNT=C_DELIVERY_CNT+%d WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", 1, tmpList[i][0], tmpList[i][1], tmpList[i][2]));
             }
             conn.commit();
-            conn.setAutoCommit(true);
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
