@@ -86,11 +86,8 @@ public class NewOrderTransaction extends Transaction {
             statement.setInt(7, NO_ALL_LOCAL);
             statement.executeUpdate();
 
-            // Step 4
-            double TOTAL_AMOUNT = 0;
-
             // step 5 - Stock
-            String SQL5 = "update Stock set S_QUANTITY = ADJUSTED_QTY, S_YTD = NO_YTD, S_ORDER_CNT = NO_ORDER_CNT, S_REMOTE_CNT = NO_REMOTE_CNT from (select t1.NO_SUPPLY_W_ID, t1.NO_I_ID, case when t1.NO_QUANTITY - t2.S_QUANTITY < 10 then t1.NO_QUANTITY - t2.S_QUANTITY + 100 else t1.NO_QUANTITY - t2.S_QUANTITY end as ADJUSTED_QTY, t1.NO_QUANTITY as NO_YTD, t2.S_ORDER_CNT + 1 as NO_ORDER_CNT, S_REMOTE_CNT + case when t1.NO_SUPPLY_W_ID != t1.NO_W_ID then 1 else 0 end as NO_REMOTE_CNT from new_order_info t1 left join Stock t2 on t1.NO_SUPPLY_W_ID = t2.S_W_ID and t1.NO_I_ID = t2.S_I_ID) t where S_W_ID = t.NO_SUPPLY_W_ID and S_I_ID = t.NO_I_ID;";
+            String SQL5 = "update Stock set S_QUANTITY = ADJUSTED_QTY, S_YTD = S_YTD + NO_YTD, S_ORDER_CNT = NO_ORDER_CNT, S_REMOTE_CNT = S_REMOTE_CNT + NO_REMOTE_CNT from (select t1.NO_SUPPLY_W_ID, t1.NO_I_ID, case when t1.NO_QUANTITY - t2.S_QUANTITY < 10 then t1.NO_QUANTITY - t2.S_QUANTITY + 100 else t1.NO_QUANTITY - t2.S_QUANTITY end as ADJUSTED_QTY, t1.NO_QUANTITY as NO_YTD, t2.S_ORDER_CNT + 1 as NO_ORDER_CNT, S_REMOTE_CNT + case when t1.NO_SUPPLY_W_ID != t1.NO_W_ID then 1 else 0 end as NO_REMOTE_CNT from new_order_info t1 left join Stock t2 on t1.NO_SUPPLY_W_ID = t2.S_W_ID and t1.NO_I_ID = t2.S_I_ID) t where S_W_ID = t.NO_SUPPLY_W_ID and S_I_ID = t.NO_I_ID;";
             statement = conn.prepareStatement(SQL5);
             statement.executeUpdate();
 
@@ -100,6 +97,7 @@ public class NewOrderTransaction extends Transaction {
             statement.executeUpdate();
 
             // step 6
+            double TOTAL_AMOUNT = 0;
             String SQL7 = "select sum(OL_AMOUNT) as TOTAL_AMOUNT from OrderLine where OL_O_ID = ? and OL_D_ID = ? and OL_W_ID = ?;";
             statement = conn.prepareStatement(SQL7);
             statement.setInt(1, N);
