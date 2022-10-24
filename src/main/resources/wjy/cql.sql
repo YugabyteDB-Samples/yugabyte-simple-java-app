@@ -251,6 +251,6 @@ CREATE TABLE dbycql.customer (
   PRIMARY KEY ((C_W_ID, C_D_ID), C_BALANCE, C_ID))  -- change
 WITH CLUSTERING ORDER BY (C_BALANCE DESC, C_ID ASC); -- change
 
-copy customer (C_W_id,C_D_id,C_id,C_first,C_middle,C_last,C_street_1,C_street_2,C_city,C_state,C_zip,C_phone,C_since,C_credit,C_credit_lim,C_discount,C_balance,C_ytd_payment,C_payment_cnt,C_delivery_cnt,C_data)
+copy dbycql.customer (C_W_id,C_D_id,C_id,C_first,C_middle,C_last,C_street_1,C_street_2,C_city,C_state,C_zip,C_phone,C_since,C_credit,C_credit_lim,C_discount,C_balance,C_ytd_payment,C_payment_cnt,C_delivery_cnt,C_data)
 from '/home/stuproj/cs4224j/project_data/data_files/customer.csv' 
 WITH NULL='null' AND INGESTRATE=5000;

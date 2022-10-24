@@ -71,14 +71,14 @@ public class PopularItemTransaction extends Transaction {
             System.out.printf("O_ID=%d,O_ENTRY_D=%s,C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s\n", O_ID, O_ENTRY_D, C_FIRST, C_MIDDLE, C_LAST);
 
             // CQL4
-            String CQL4 = String.format("select OL_W_ID, OL_D_ID, OL_O_ID, OL_QUANTITY from dbycql.OrderLine_popular where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d limit 1;", W_ID, D_ID, O_ID);
+            String CQL4 = String.format("select OL_W_ID, OL_D_ID, OL_O_ID, OL_QUANTITY from dbycql.OrderLine where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d limit 1;", W_ID, D_ID, O_ID);
             rs = cqlSession.execute(CQL4);
             onerow = rs.one();
             int OL_O_ID = onerow.getInt(2);
             BigDecimal MAX_OL_QUANTITY = onerow.getBigDecimal(3);
 
             // CQL5
-            String CQL5 = String.format("select OL_W_ID, OL_D_ID, OL_O_ID, OL_I_ID from dbycql.OrderLine_popular where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d and OL_QUANTITY = %f;", W_ID, D_ID, OL_O_ID, MAX_OL_QUANTITY);
+            String CQL5 = String.format("select OL_W_ID, OL_D_ID, OL_O_ID, OL_I_ID from dbycql.OrderLine where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d and OL_QUANTITY = %f;", W_ID, D_ID, OL_O_ID, MAX_OL_QUANTITY);
             rs = cqlSession.execute(CQL5);
             List<Integer> OL_I_IDs = new ArrayList<>();
             rows = rs.all();
@@ -106,14 +106,14 @@ public class PopularItemTransaction extends Transaction {
             String I_NAME = rs.one().getString(0);
 
             // CQL8
-            String CQL8 = String.format("select count(OL_I_ID) as I_NUM from dbycql.OrderLine_popular where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID >= %d-%d and OL_O_ID < %d and OL_I_ID = %d;", W_ID, D_ID, N, L, N, OL_I_ID);
+            String CQL8 = String.format("select count(OL_I_ID) as I_NUM from dbycql.OrderLine where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID >= %d-%d and OL_O_ID < %d and OL_I_ID = %d;", W_ID, D_ID, N, L, N, OL_I_ID);
             SimpleStatement simpleStatement = SimpleStatement.builder(CQL8)
                     .setExecutionProfileName("oltp")
                     .build();
             rs = cqlSession.execute(simpleStatement);
             long I_NUM = rs.one().getLong(0);
             double I_Percentage = I_NUM * 100.0 / L;
-            System.out.printf("I_NAME=%s, I_Percentage=%f\n", I_NAME, I_Percentage);
+            System.out.printf("I_NAME=%s, I_Percentage= %f%% \n", I_NAME, I_Percentage);
         }
     }
 
@@ -187,7 +187,7 @@ public class PopularItemTransaction extends Transaction {
             while (rs.next()) {
                 String I_NAME = rs.getString(1);
                 double percentage = rs.getDouble(2);
-                System.out.printf("I_NAME=%s,Percentage=%f\n", I_NAME, percentage);
+                System.out.printf("I_NAME=%s,Percentage=%f%%\n", I_NAME, percentage);
             }
         } catch (SQLException e) {
             e.printStackTrace();
