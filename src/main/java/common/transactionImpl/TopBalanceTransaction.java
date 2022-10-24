@@ -52,7 +52,11 @@ public class TopBalanceTransaction extends Transaction {
                     // CQL3
                     String CQL3 = String.format("insert into dbycql.customer_balance_top10 (CB_TOP10, CB_W_ID, CB_D_ID, CB_ID, CB_FIRST, CB_MIDDLE, CB_LAST, CB_BALANCE, CB_TIME) values ('top10', %d, %d, %d, '%s', '%s', '%s', %f,now());", C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_BALANCE);
 //                    System.out.println(CQL3);
-                    cqlSession.execute(CQL3);
+//                    cqlSession.execute(CQL3);
+                    simpleStatement = SimpleStatement.builder(CQL3)
+                            .setExecutionProfileName("oltp")
+                            .build();
+                    cqlSession.execute(simpleStatement);
                 }
             }
         }

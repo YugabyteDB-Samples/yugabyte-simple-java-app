@@ -29,9 +29,14 @@ public class ExecuteManager {
         transactionTypeList.add(new Statistics(TransactionType.TOP_BALANCE));
         transactionTypeList.add(new Statistics(TransactionType.RELATED_CUSTOMER));
 
-        skipSet.add(TransactionType.NEW_ORDER);
-        skipSet.add(TransactionType.DELIVERY);
-        skipSet.add(TransactionType.RELATED_CUSTOMER);
+        // 正选逻辑
+//        skipSet.add(TransactionType.NEW_ORDER);
+//        skipSet.add(TransactionType.DELIVERY);
+//        skipSet.add(TransactionType.RELATED_CUSTOMER);
+
+        // 反选逻辑
+        skipSet.addAll(Arrays.asList(TransactionType.values()));
+        skipSet.remove(TransactionType.NEW_ORDER);
     }
 
     public void executeYSQL(Connection conn, List<Transaction> list) throws SQLException {
