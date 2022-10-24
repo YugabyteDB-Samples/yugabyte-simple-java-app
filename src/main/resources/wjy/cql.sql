@@ -6,10 +6,12 @@
 -- 7. Top-Balance Transaction (finished)
 
 -- 1. New Order Transaction
+--CQL1
 -- 读取第一行 N 后面的数据
-select D_NEXT_O_ID from District where D_W_ID = 'W_ID' and D_ID = 'D_ID';
+select D_NEXT_O_ID from dbycql.District where D_W_ID = 'W_ID' and D_ID = 'D_ID';
+--CQL2
 -- 得到 'N' = D_NEXT_O_ID
-update District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = 'W_ID' and D_ID = 'D_ID';
+update dbycql.District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = 'W_ID' and D_ID = 'D_ID';
 
 -- 设 TOTAL_AMOUNT = 0, NO_ALL_LOCAL = 1
 
@@ -18,24 +20,30 @@ update District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = 'W_ID' and D_ID
     -- if 'W_ID' != 'OL_SUPPLY_W_ID', then NO_ALL_LOCAL = 0
     -- if 'W_ID' != 'OL_SUPPLY_W_ID', then IF_REMOTE = 1, else IF_REMOTE = 0
 
+    --CQL3
     --update Stock
     select S_QUANTITY from dbycql.Stock where S_W_ID = 'OL_SUPPLY_W_ID' and S_I_ID = 'OL_I_ID';
+    --CQL4
     -- ADJUSTED_QTY = S_QUANTITY - 'OL_QUANTITY', 进行判断：if ADJUSTED_QTY < 10, then ADJUSTED_QTY += 100
     select S_YTD from dbycql.Stock where S_W_ID = 'OL_SUPPLY_W_ID' and S_I_ID = 'OL_I_ID';
     -- S_YTD_NEW = S_YTD + 'OL_QUANTITY'
+    -- CQL5
     update dbycql.Stock
-    set S_QUANTITY = 'ADJUSTED_QTY', S_YTD = 'S_YTD_NEW', S_ORDER_CNT = S_ORDER_CNT + 1, S_REMOTE_CNT = S_REMOTE_CNT + 'IF_REMOTE';
+    set S_QUANTITY = 'ADJUSTED_QTY', S_YTD = 'S_YTD_NEW', S_ORDER_CNT = S_ORDER_CNT + 1, S_REMOTE_CNT = S_REMOTE_CNT + 'IF_REMOTE'
     where S_W_ID = 'OL_SUPPLY_W_ID' and S_I_ID = 'OL_I_ID';
 
     -- update OrderLine
+    -- CQL6
     select I_NAME, I_PRICE from dbycql.Item where I_ID = 'OL_I_ID';
     -- ITEM_AMOUNT = I_PRICE * 'OL_QUANTITY'
     -- TOTAL_AMOUNT += ITEM_AMOUNT
     -- DIST_INFO = 'S_DIST_' + 'D_ID' (string 连接)
+    -- CQL7
     insert into dbycql.OrderLine (OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER, OL_I_ID, OL_DELIVERY_D, OL_AMOUNT, OL_SUPPLY_W_ID, OL_QUANTITY, OL_DIST_INFO)
     values ('W_ID', 'D_ID', 'N', i, 'OL_I_ID', NULL, 'ITEM_AMOUNT', 'OL_SUPPLY_W_ID', 'OL_QUANTITY', 'DIST_INFO');
 
     -- update dbycql.customer_item
+    -- CQL8
     insert into dbycql.customer_item (CI_W_ID, CI_D_ID, CI_C_ID, CI_O_ID, CI_I_ID, CI_I_NUMBER)
     values ('W_ID', 'D_ID', 'C_ID', 'N', 'OL_I_ID', i);
 
@@ -44,12 +52,16 @@ update District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = 'W_ID' and D_ID
 -- 结束循环
 
 -- 取出当前时间 current_time = current_timestamp
+-- CQL9
 insert into dbycql.Orders (O_ID, O_D_ID, O_W_ID, O_C_ID, O_ENTRY_D, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL)
-values ('N', 'D_ID', 'W_ID', 'C_ID', 'current_time', NULL, 'M', 'NO_ALL_LOCAL');
+values ('N', 'D_ID', 'W_ID', 'C_ID', toTimestamp(now()), NULL, 'M', 'NO_ALL_LOCAL');
 
 -- step6
+-- CQL10
 select W_TAX from dbycql.Warehouse where W_ID = 'W_ID';
+-- CQL11
 select D_TAX from dbycql.District where D_W_ID = 'W_ID' and D_ID = 'D_ID';
+-- CQL12
 select C_LAST, C_CREDIT, C_DISCOUNT from dbycql.Customer where C_W_ID = 'W_ID' and C_D_ID = 'D_ID' and C_ID = 'C_ID';
 -- 计算 TOTAL_AMOUNT = TOTAL_AMOUNT * (1+ D_TAX +W_TAX) * (1 - C_DISCOUNT)
 

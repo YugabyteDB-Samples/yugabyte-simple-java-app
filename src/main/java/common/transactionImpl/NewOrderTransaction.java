@@ -2,6 +2,7 @@ package common.transactionImpl;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import common.Transaction;
 
 import java.sql.*;
@@ -39,7 +40,6 @@ public class NewOrderTransaction extends Transaction {
             conn.setAutoCommit(false);
             // SQL1
             String SQL1 = "update District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = ? and D_ID = ? returning D_NEXT_O_ID;";
-//        String SQL1 = "update District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = 'W_ID' and D_ID = 'D_ID' returning D_NEXT_O_ID;";
             statement = conn.prepareStatement(SQL1);
             statement.setInt(1, W_ID);
             statement.setInt(2, D_ID);
@@ -162,14 +162,146 @@ public class NewOrderTransaction extends Transaction {
 
     @Override
     protected void YCQLExecute(CqlSession cqlSession) {
+        com.datastax.oss.driver.api.core.cql.ResultSet rs = null;
+        List<Row> rows = null;
+        Row oneRow = null;
+        SimpleStatement simpleStatement = null;
+
         // CQL1
-        String CQL1 = "SELECT * FROM dbycql.Customer Limit 20";
-        com.datastax.oss.driver.api.core.cql.ResultSet resultSet = cqlSession.execute(CQL1);
-        List<Row> rows = resultSet.all();
-        System.out.printf("Get %d result\n", rows.size());
-        for (Row row : rows) {
-            System.out.println(row);
+        String CQL1 = String.format("select D_NEXT_O_ID from dbycql.District where D_W_ID = %d and D_ID = %d;", W_ID, D_ID);
+        simpleStatement = SimpleStatement.builder(CQL1)
+                .setExecutionProfileName("oltp")
+                .build();
+        rs = cqlSession.execute(simpleStatement);
+        int N = rs.one().getInt(0);
+
+        // CQL2
+        String CQL2 = String.format("update dbycql.District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = %d and D_ID = %d;", W_ID, D_ID);
+        simpleStatement = SimpleStatement.builder(CQL2)
+                .setExecutionProfileName("oltp")
+                .build();
+        cqlSession.execute(simpleStatement);
+
+        double TOTAL_AMOUNT = 0;
+        int NO_ALL_LOCAL = 1;
+        int M = items.size();
+        int IF_REMOTE = 0;
+        for (int i = 1; i <= M; i++) {
+            int OL_I_ID = items.get(i - 1);
+            int OL_SUPPLY_W_ID = supplierWarehouses.get(i - 1);
+            int OL_QUANTITY = quantities.get(i - 1);
+            if (W_ID != OL_SUPPLY_W_ID) {
+                NO_ALL_LOCAL = 0;
+                IF_REMOTE = 1;
+            } else IF_REMOTE = 0;
+
+
+            // CQL3
+            String CQL3 = String.format("select S_QUANTITY from dbycql.Stock where S_W_ID = %d and S_I_ID = %d;", OL_SUPPLY_W_ID, OL_I_ID);
+            simpleStatement = SimpleStatement.builder(CQL3)
+                    .setExecutionProfileName("oltp")
+                    .build();
+            rs = cqlSession.execute(simpleStatement);
+            double S_QUANTITY = rs.one().getBigDecimal(0).doubleValue();
+            double ADJUSTED_QTY = S_QUANTITY - OL_QUANTITY;
+            if (ADJUSTED_QTY < 10) ADJUSTED_QTY += 100;
+
+            // CQL4
+            String CQL4 = String.format("select S_YTD from dbycql.Stock where S_W_ID = %d and S_I_ID = %d;", OL_SUPPLY_W_ID, OL_I_ID);
+            simpleStatement = SimpleStatement.builder(CQL4)
+                    .setExecutionProfileName("oltp")
+                    .build();
+            rs = cqlSession.execute(simpleStatement);
+            double S_YTD = rs.one().getBigDecimal(0).doubleValue();
+            double S_YTD_NEW = S_YTD + OL_QUANTITY;
+
+
+            // CQL5
+            String CQL5 = String.format("update dbycql.Stock set S_QUANTITY = %f, S_YTD = %f, S_ORDER_CNT = S_ORDER_CNT + 1, S_REMOTE_CNT = S_REMOTE_CNT + %d where S_W_ID = %d and S_I_ID = %d;",
+                    ADJUSTED_QTY, S_YTD_NEW, IF_REMOTE, OL_SUPPLY_W_ID, OL_I_ID);
+            simpleStatement = SimpleStatement.builder(CQL5)
+                    .setExecutionProfileName("oltp")
+                    .build();
+            cqlSession.execute(simpleStatement);
+
+            // CQL6
+            String CQL6 = String.format("select I_NAME, I_PRICE from dbycql.Item where I_ID = %d;", OL_I_ID);
+            simpleStatement = SimpleStatement.builder(CQL6)
+                    .setExecutionProfileName("oltp")
+                    .build();
+            rs = cqlSession.execute(simpleStatement);
+            oneRow = rs.one();
+            String I_NAME = oneRow.getString(0);
+            double I_PRICE = oneRow.getBigDecimal(1).doubleValue();
+
+            double ITEM_AMOUNT = I_PRICE * OL_QUANTITY;
+            TOTAL_AMOUNT += ITEM_AMOUNT;
+            String DIST_INFO = "S_DIST_" + D_ID;
+
+            // CQL7
+            String CQL7 = String.format("insert into dbycql.OrderLine (OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER, OL_I_ID, OL_DELIVERY_D, OL_AMOUNT, OL_SUPPLY_W_ID, OL_QUANTITY, OL_DIST_INFO) " +
+                            "values (%d, %d, %d, %d, %d, NULL, %f, %d, %d, '%s');",
+                    W_ID, D_ID, N, i, OL_I_ID, ITEM_AMOUNT, OL_SUPPLY_W_ID, OL_QUANTITY, DIST_INFO);
+            simpleStatement = SimpleStatement.builder(CQL7)
+                    .setExecutionProfileName("oltp")
+                    .build();
+            cqlSession.execute(simpleStatement);
+
+            // CQL8
+            String CQL8 = String.format("insert into dbycql.customer_item (CI_W_ID, CI_D_ID, CI_C_ID, CI_O_ID, CI_I_ID, CI_I_NUMBER) values (%d, %d, %d, %d, %d, %d);",
+                    W_ID, D_ID, C_ID, N, OL_I_ID, i);
+            simpleStatement = SimpleStatement.builder(CQL8)
+                    .setExecutionProfileName("oltp")
+                    .build();
+            cqlSession.execute(simpleStatement);
+
+            System.out.printf("i=%d, I_NAME=%s, OL_SUPPLY_W_ID=%d, OL_QUANTITY=%d, ITEM_AMOUNT=%f, ADJUSTED_QTY=%f\n",
+                    i, I_NAME, OL_SUPPLY_W_ID, OL_QUANTITY, ITEM_AMOUNT, ADJUSTED_QTY);
         }
+
+        // CQL9
+        Timestamp current_time = Timestamp.from(Instant.now());
+        String CQL9 = String.format("insert into dbycql.Orders (O_ID, O_D_ID, O_W_ID, O_C_ID, O_ENTRY_D, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL) " +
+                        "values (%d, %d, %d, %d, toTimestamp(now()), NULL, %d, %d);",
+                N, D_ID, W_ID, C_ID, M, NO_ALL_LOCAL);
+        simpleStatement = SimpleStatement.builder(CQL9)
+                .setExecutionProfileName("oltp")
+                .build();
+        cqlSession.execute(simpleStatement);
+
+        // CQL10
+        String CQL10 = String.format("select W_TAX from dbycql.Warehouse where W_ID = %d;", W_ID);
+        simpleStatement = SimpleStatement.builder(CQL10)
+                .setExecutionProfileName("oltp")
+                .build();
+        rs = cqlSession.execute(simpleStatement);
+        oneRow = rs.one();
+        double W_TAX = oneRow.getBigDecimal(0).doubleValue();
+
+        // CQL11
+        String CQL11 = String.format("select D_TAX from dbycql.District where D_W_ID = %d and D_ID = %d;", W_ID, D_ID);
+        simpleStatement = SimpleStatement.builder(CQL11)
+                .setExecutionProfileName("oltp")
+                .build();
+        rs = cqlSession.execute(simpleStatement);
+        oneRow = rs.one();
+        double D_TAX = oneRow.getBigDecimal(0).doubleValue();
+
+        // CQL12
+        String CQL12 = String.format("select C_LAST, C_CREDIT, C_DISCOUNT from dbycql.Customer where C_W_ID = %d and C_D_ID = %d and C_ID = %d;",
+                W_ID, D_ID, C_ID);
+        simpleStatement = SimpleStatement.builder(CQL12)
+                .setExecutionProfileName("oltp")
+                .build();
+        rs = cqlSession.execute(simpleStatement);
+        oneRow = rs.one();
+        String C_LAST = oneRow.getString(0);
+        String C_CREDIT = oneRow.getString(1);
+        double C_DISCOUNT = oneRow.getBigDecimal(2).doubleValue();
+
+        TOTAL_AMOUNT = TOTAL_AMOUNT * (1 + D_TAX + W_TAX) * (1 - C_DISCOUNT);
+        System.out.printf("W_ID=%d, D_ID=%d, C_ID=%d, C_LAST=%s, C_CREDIT=%s, C_DISCOUNT=%f, W_TAX=%f, D_TAX=%f, N=%d, current_time=%s, M=%d, TOTAL_AMOUNT=%f\n",
+                W_ID,D_ID,C_ID,C_LAST,C_CREDIT,C_DISCOUNT,W_TAX,D_TAX,N,current_time,M,TOTAL_AMOUNT);
     }
 
     public int getW_ID() {
