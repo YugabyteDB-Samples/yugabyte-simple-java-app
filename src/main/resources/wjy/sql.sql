@@ -35,12 +35,11 @@ create table new_order_info
 insert into Orders (O_ID, O_D_ID, O_W_ID, O_C_ID, O_ENTRY_D, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL)
 values ('N', 'D_ID', 'W_ID', 'C_ID', 'current_time', NULL, 'M', 'NO_ALL_LOCAL'); 
 
--- step4
-TOTAL_AMOUNT = 0
+-- delete step4 
 
 --step5 - Stock
 update Stock
-set S_QUANTITY = ADJUSTED_QTY, S_YTD = NO_YTD, S_ORDER_CNT = NO_ORDER_CNT, S_REMOTE_CNT = NO_REMOTE_CNT
+set S_QUANTITY = ADJUSTED_QTY, S_YTD = S_YTD + NO_YTD, S_ORDER_CNT = NO_ORDER_CNT, S_REMOTE_CNT = S_REMOTE_CNT + NO_REMOTE_CNT -- change
 from (select
         t1.NO_SUPPLY_W_ID,
         t1.NO_I_ID,
