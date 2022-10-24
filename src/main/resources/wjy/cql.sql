@@ -138,11 +138,11 @@ where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' and O_ID >= 'N'-'L' and O_ID < 'N';
     where C_W_ID = 'W_ID' and C_D_ID = 'D_ID' and C_ID = 'O_C_ID';
     -- 得到每个订单的用户信息 (C_FIRST, C_MIDDLE, C_LAST)
     -- CQL4
-    select OL_W_ID, OL_D_ID, OL_O_ID, OL_QUANTITY from dbycql.OrderLine_popular
+    select OL_W_ID, OL_D_ID, OL_O_ID, OL_QUANTITY from dbycql.OrderLine
     where OL_W_ID = 'W_ID' and OL_D_ID = 'D_ID' and OL_O_ID = 'O_ID' limit 1;
     -- 得到 MAX_OL_QUANTITY = OL_QUANTITY
     -- CQL5
-    select OL_W_ID, OL_D_ID, OL_O_ID, OL_I_ID from dbycql.OrderLine_popular
+    select OL_W_ID, OL_D_ID, OL_O_ID, OL_I_ID from dbycql.OrderLine
     where OL_W_ID = 'W_ID' and OL_D_ID = 'D_ID' and OL_O_ID = 'OL_O_ID' and OL_QUANTITY = 'MAX_OL_QUANTITY';
 
     -- 得到当前订单的所有 OL_I_ID (并用另一个集合(all_item_set)记录下所有订单的 OL_I_ID(去重))
@@ -155,7 +155,7 @@ where O_W_ID = 'W_ID' and O_D_ID = 'D_ID' and O_ID >= 'N'-'L' and O_ID < 'N';
     -- CQL7
     select I_NAME from dbycql.Item where I_ID = 'OL_I_ID';
     -- CQL8
-    select count(OL_I_ID) as I_NUM from dbycql.OrderLine_popular
+    select count(OL_I_ID) as I_NUM from dbycql.OrderLine
     where OL_W_ID = 'W_ID' and OL_D_ID = 'D_ID' and OL_O_ID >= 'N'-'L' and OL_O_ID < 'N' and OL_I_ID = 'OL_I_ID';
     -- 输出 I_NAME, I_Percentage = I_NUM * 100 / 'L'
 
@@ -179,7 +179,7 @@ CREATE TABLE dbycql.customer_balance_top10 (
 -- for every C_W_ID (1-10):
     -- for every C_D_ID (1-10):
         -- CQL2
-        select C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from dbycql.customer_balance 
+        select C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from dbycql.customer
         where C_W_ID = 'C_W_ID' and C_D_ID = 'C_D_ID' limit 10;
         -- 得到 'C_W_ID', 'C_D_ID', 'C_ID', 'C_FIRST', 'C_MIDDLE', 'C_LAST', 'C_BALANCE'
         -- 一条一条插入数据 for every record(10条):
@@ -204,12 +204,10 @@ select CB_W_ID, CB_D_ID, CB_ID, CB_FIRST, CB_MIDDLE, CB_LAST, CB_BALANCE from db
 DROP TABLE dbycql.customer_balance_top10;
 
 
-
-
 -- create new tables at very first
 
 -- 6. popular item
-CREATE TABLE dbycql.orderline_popular (
+CREATE TABLE dbycql.orderline (
     ol_w_id int,
     ol_d_id int,
     ol_o_id int,
@@ -223,12 +221,12 @@ CREATE TABLE dbycql.orderline_popular (
     PRIMARY KEY ((ol_w_id, ol_d_id), ol_quantity, ol_o_id, ol_number) -- change
 ) WITH CLUSTERING ORDER BY (ol_quantity DESC, ol_o_id ASC, ol_number ASC); -- change
 
-copy dbycql.orderline_popular (ol_w_id, ol_d_id, ol_o_id, ol_number, ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity, ol_dist_info)
+copy dbycql.orderline (ol_w_id, ol_d_id, ol_o_id, ol_number, ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity, ol_dist_info)
 from '/home/stuproj/cs4224j/project_data/data_files/order-line.csv' 
 WITH NULL='null' AND INGESTRATE=5000;
 
 -- 7. top balance
-CREATE TABLE dbycql.customer_balance (
+CREATE TABLE dbycql.customer (
   C_W_id int,
   C_D_id int,
   C_id int,
@@ -253,6 +251,6 @@ CREATE TABLE dbycql.customer_balance (
   PRIMARY KEY ((C_W_ID, C_D_ID), C_BALANCE, C_ID))  -- change
 WITH CLUSTERING ORDER BY (C_BALANCE DESC, C_ID ASC); -- change
 
-copy customer_balance (C_W_id,C_D_id,C_id,C_first,C_middle,C_last,C_street_1,C_street_2,C_city,C_state,C_zip,C_phone,C_since,C_credit,C_credit_lim,C_discount,C_balance,C_ytd_payment,C_payment_cnt,C_delivery_cnt,C_data)
+copy customer (C_W_id,C_D_id,C_id,C_first,C_middle,C_last,C_street_1,C_street_2,C_city,C_state,C_zip,C_phone,C_since,C_credit,C_credit_lim,C_discount,C_balance,C_ytd_payment,C_payment_cnt,C_delivery_cnt,C_data)
 from '/home/stuproj/cs4224j/project_data/data_files/customer.csv' 
 WITH NULL='null' AND INGESTRATE=5000;
