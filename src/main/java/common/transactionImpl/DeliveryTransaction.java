@@ -85,9 +85,9 @@ public class DeliveryTransaction extends Transaction {
             SimpleStatement stmt = SimpleStatement.newInstance(String.format("select " +
                     "O_ID," +
                     "O_C_ID " +
-                    "from dbycql.order_mv " +
-                    "where O_W_ID=%d and O_CARRIER_ID = 0 and O_D_ID=%d " +
-                    "LIMIT 1 allow filtering", W_ID, d_ID));
+                    "from dbycql.orders " +
+                    "where O_W_ID=%d and O_CARRIER_ID = null and O_D_ID=%d " +
+                    "LIMIT 1", W_ID, d_ID));
             com.datastax.oss.driver.api.core.cql.ResultSet rs = session.execute(stmt);
             Iterator<Row> rsIterator = rs.iterator();
             while (rsIterator.hasNext()) {

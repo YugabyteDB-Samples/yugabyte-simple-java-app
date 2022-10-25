@@ -52,13 +52,15 @@ public class RelatedCustomerTransaction extends Transaction {
                 "O_W_ID, " +
                 "O_D_ID, " +
                 "O_ID " +
-                "from dbycql.orders2 " +
+                "from dbycql.orders " +
                 "where O_W_ID=%d AND O_D_ID=%d AND O_C_ID=%d ", C_W_ID, C_D_ID, C_ID));
         com.datastax.oss.driver.api.core.cql.ResultSet rs = session.execute(stmt);
         for (Row row : rs) {
             StringBuilder itemList = new StringBuilder("(");
             stmt = SimpleStatement.newInstance(String.format("select " +
                     "OL_I_ID " +
+
+                    // 正式环境需要更新为orderline表
                     "from dbycql.orderline2 " +
                     "where OL_W_ID=%d " +
                     "and OL_D_ID=%d" +
@@ -99,8 +101,17 @@ public class RelatedCustomerTransaction extends Transaction {
                     }
                 }
             }
-            System.out.println(outputLine);
             // 拿到了outputLine作为一个以List为key，MutableInteger为value的hashMap，后面对这个解析输出即可
+            Set<List<Integer>> tmpSet = outputLine.keySet();
+            Iterator<List<Integer>> it1 = tmpSet.iterator();
+            while(it1.hasNext()){
+                List<Integer> tmpKey = it1.next();
+                int val = outputLine.get(tmpKey);
+                if (val > 1) {
+                    System.out.println(tmpKey);
+                    System.out.println(val);
+                }
+            }
         }
     }
 
