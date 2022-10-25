@@ -77,7 +77,7 @@ public class PaymentTransaction extends Transaction {
         Iterator<Row> rs1Iterator = rs1.iterator();
         while (rs1Iterator.hasNext()) {
             Row row = rs1Iterator.next();
-            Float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
+            float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
             tmp_payment += PAYMENT;
             stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Warehouse SET W_YTD=%f WHERE W_ID=%d", tmp_payment, C_W_ID));
             session.execute(stmt);
@@ -88,7 +88,7 @@ public class PaymentTransaction extends Transaction {
         Iterator<Row> rs2Iterator = rs2.iterator();
         while (rs2Iterator.hasNext()) {
             Row row = rs2Iterator.next();
-            Float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
+            float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
             tmp_payment += PAYMENT;
             stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.District SET D_YTD=%f WHERE D_W_ID=%d AND D_ID=%d", tmp_payment, C_W_ID, C_D_ID));
             session.execute(stmt);
@@ -99,7 +99,7 @@ public class PaymentTransaction extends Transaction {
         Iterator<Row> rs3Iterator = rs3.iterator();
         while (rs3Iterator.hasNext()) {
             Row row = rs3Iterator.next();
-            Float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
+            float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
             tmp_payment += PAYMENT;
             stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer SET C_BALANCE=%f WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", tmp_payment, C_W_ID, C_D_ID, C_ID));
             session.execute(stmt);
