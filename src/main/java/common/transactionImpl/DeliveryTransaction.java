@@ -42,15 +42,15 @@ public class DeliveryTransaction extends Transaction {
                     ")t2 " +
                     "on t1.O_W_ID=t2.OL_W_ID AND t1.O_D_ID=t2.OL_D_ID AND t1.O_ID=t2.OL_O_ID " +
                     "where t1.rnk=1", W_ID));
-            int[][] tmpList = new int[10][];
+            int[][] tmpList = new int[10][5];
             int index = 0;
             while (rs.next()) {
                 System.out.println("存参数中...");
-                tmpList[index] = new int[4];
                 tmpList[index][0] = rs.getInt(1);
                 tmpList[index][1] = rs.getInt(2);
                 tmpList[index][2] = rs.getInt(3);
                 tmpList[index][3] = rs.getInt(4);
+                tmpList[index][4] = rs.getInt(5);
                 index++;
             }
             System.out.println("Delivery Transaction正在执行中...");
