@@ -8,6 +8,7 @@ import common.Transaction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.util.*;
 
 public class RelatedCustomerTransaction extends Transaction {
@@ -44,7 +45,7 @@ public class RelatedCustomerTransaction extends Transaction {
                 "where a.common_cnt>=2", C_W_ID, C_D_ID, C_ID, C_W_ID));
     }
 
-    @Override
+
     protected void YCQLExecute(CqlSession session) {
         System.out.println("执行related cql中..");
         HashMap<List<Integer>, Integer> outputLine = new HashMap<List<Integer>, Integer>();
@@ -52,13 +53,15 @@ public class RelatedCustomerTransaction extends Transaction {
                 "O_W_ID, " +
                 "O_D_ID, " +
                 "O_ID " +
-                "from dbycql.orders2 " +
+                "from dbycql.orders " +
                 "where O_W_ID=%d AND O_D_ID=%d AND O_C_ID=%d ", C_W_ID, C_D_ID, C_ID));
         com.datastax.oss.driver.api.core.cql.ResultSet rs = session.execute(stmt);
         for (Row row : rs) {
             StringBuilder itemList = new StringBuilder("(");
             stmt = SimpleStatement.newInstance(String.format("select " +
                     "OL_I_ID " +
+
+                    // 正式环境需要更新为orderline表
                     "from dbycql.orderline2 " +
                     "where OL_W_ID=%d " +
                     "and OL_D_ID=%d" +
@@ -73,7 +76,8 @@ public class RelatedCustomerTransaction extends Transaction {
                 count_item++;
             }
             itemList.append(")");
-            stmt = SimpleStatement.newInstance(String.format("select " +
+            // 针对最后一个超时问题设置oltp格式的stmt
+            String last_cql = String.format("select " +
                     "CI_C_ID, " +
                     "CI_W_ID, " +
                     "CI_D_ID, " +
@@ -81,9 +85,12 @@ public class RelatedCustomerTransaction extends Transaction {
                     "CI_I_ID " +
                     "from dbycql.customer_item " +
                     "where CI_I_ID in %s " +
-                    "and CI_W_ID != %d ", itemList, C_W_ID));
+                    "and CI_W_ID != %d ", itemList, C_W_ID);
             // 存前三个ID作为key和对应出现item次数作为value
-            com.datastax.oss.driver.api.core.cql.ResultSet outRs = session.execute(stmt);
+            SimpleStatement simpleStatement = SimpleStatement.builder(last_cql)
+                    .setExecutionProfileName("oltp").setTimeout(Duration.ofSeconds(30))
+                    .build();
+            com.datastax.oss.driver.api.core.cql.ResultSet outRs = session.execute(simpleStatement);
             for (Row finalRs : outRs) {
                 if (!Objects.equals(String.valueOf(finalRs.getInt("CI_W_ID")), String.valueOf(C_W_ID))) {
                     List<Integer> order_info = Arrays.asList(finalRs.getInt("CI_W_ID"), finalRs.getInt("CI_D_ID"), finalRs.getInt("CI_C_ID"));
@@ -96,6 +103,16 @@ public class RelatedCustomerTransaction extends Transaction {
                 }
             }
             // 拿到了outputLine作为一个以List为key，MutableInteger为value的hashMap，后面对这个解析输出即可
+            Set<List<Integer>> tmpSet = outputLine.keySet();
+            Iterator<List<Integer>> it1 = tmpSet.iterator();
+            while(it1.hasNext()){
+                List<Integer> tmpKey = it1.next();
+                int val = outputLine.get(tmpKey);
+                if (val > 1) {
+                    System.out.println(tmpKey);
+                    System.out.println(val);
+                }
+            }
         }
     }
 

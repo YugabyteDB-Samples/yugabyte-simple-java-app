@@ -1,13 +1,18 @@
 package common.transactionImpl;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import common.Transaction;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
+import java.util.Iterator;
+import java.util.Objects;
 
 // YSQL: 400ms, YCQL: 350ms
 public class PaymentTransaction extends Transaction {
@@ -67,15 +72,45 @@ public class PaymentTransaction extends Transaction {
 
     protected void YCQLExecute(CqlSession session) {
         System.out.println("执行payment cql中..");
-        SimpleStatement stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Warehouse_counter SET W_YTD=W_YTD+%d WHERE W_ID=%d", (int) PAYMENT, C_W_ID));
-        session.execute(stmt);
-        stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.District_counter SET D_YTD=D_YTD+%d WHERE D_W_ID=%d AND D_ID=%d", (int) PAYMENT, C_W_ID, C_D_ID));
-        session.execute(stmt);
-        stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_BALANCE=C_BALANCE-%d WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", (int) PAYMENT, C_W_ID, C_D_ID, C_ID));
-        session.execute(stmt);
-        stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_YTD_PAYMENT=C_YTD_PAYMENT+%d WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", (int) PAYMENT, C_W_ID, C_D_ID, C_ID));
-        session.execute(stmt);
-        stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_PAYMENT_CNT=C_PAYMENT_CNT+%d WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", 1, C_W_ID, C_D_ID, C_ID));
+        // cql1
+        SimpleStatement stmt = SimpleStatement.newInstance(String.format("select W_YTD from dbycql.Warehouse where W_ID=%d", C_W_ID));
+        com.datastax.oss.driver.api.core.cql.ResultSet rs1 = session.execute(stmt);
+        Iterator<Row> rs1Iterator = rs1.iterator();
+        while (rs1Iterator.hasNext()) {
+            Row row = rs1Iterator.next();
+            Float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
+            tmp_payment += PAYMENT;
+            stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Warehouse SET W_YTD=%f WHERE W_ID=%d", tmp_payment, C_W_ID));
+            session.execute(stmt);
+        }
+        // cql2
+        stmt = SimpleStatement.newInstance(String.format("select D_YTD from dbycql.District where D_W_ID=%d AND D_ID=%d", C_W_ID, C_D_ID));
+        com.datastax.oss.driver.api.core.cql.ResultSet rs2 = session.execute(stmt);
+        Iterator<Row> rs2Iterator = rs2.iterator();
+        while (rs2Iterator.hasNext()) {
+            Row row = rs2Iterator.next();
+            Float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
+            tmp_payment += PAYMENT;
+            stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.District SET D_YTD=%f WHERE D_W_ID=%d AND D_ID=%d", tmp_payment, C_W_ID, C_D_ID));
+            session.execute(stmt);
+        }
+        // cql3
+        stmt = SimpleStatement.newInstance(String.format("select C_BALANCE from dbycql.Customer where C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", C_W_ID, C_D_ID, C_ID));
+        com.datastax.oss.driver.api.core.cql.ResultSet rs3 = session.execute(stmt);
+        Iterator<Row> rs3Iterator = rs3.iterator();
+        while (rs3Iterator.hasNext()) {
+            Row row = rs3Iterator.next();
+            Float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
+            tmp_payment += PAYMENT;
+            stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer SET C_BALANCE=%f WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", tmp_payment, C_W_ID, C_D_ID, C_ID));
+            session.execute(stmt);
+        }
+        String fourth_cql = String.format("UPDATE dbycql.Customer SET C_YTD_PAYMENT=C_YTD_PAYMENT+%f WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", PAYMENT, C_W_ID, C_D_ID, C_ID);
+        SimpleStatement simpleStatement = SimpleStatement.builder(fourth_cql)
+                .setExecutionProfileName("oltp")
+                .build();
+        session.execute(simpleStatement);
+        stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer SET C_PAYMENT_CNT=C_PAYMENT_CNT+%d WHERE C_W_ID=%d AND C_D_ID=%d AND C_ID=%d", 1, C_W_ID, C_D_ID, C_ID));
         session.execute(stmt);
     }
 
