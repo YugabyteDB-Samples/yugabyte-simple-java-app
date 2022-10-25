@@ -137,7 +137,7 @@ public class NewOrderTransaction extends Transaction {
                 System.out.printf("NO_I_ID=%d,I_NAME=%s,NO_SUPPLY_W_ID=%d,NO_QUANTITY=%d,OL_AMOUNT=%f,S_QUANTITY=%f\n", NO_I_ID, I_NAME, NO_SUPPLY_W_ID, NO_QUANTITY, OL_AMOUNT, S_QUANTITY);
             }
 
-            String SQL10 = "insert into customer_item select NO_W_ID, NO_D_ID, NO_C_ID, NO_O_ID, NO_I_ID, NO_N from new_order_info;";
+            String SQL10 = "insert into customer_item select NO_W_ID, NO_D_ID, NO_C_ID, NO_O_ID, NO_I_ID from new_order_info;";
             statement = conn.prepareStatement(SQL10);
             statement.executeUpdate();
 
@@ -246,8 +246,8 @@ public class NewOrderTransaction extends Transaction {
             cqlSession.execute(simpleStatement);
 
             // CQL8
-            String CQL8 = String.format("insert into dbycql.customer_item (CI_W_ID, CI_D_ID, CI_C_ID, CI_O_ID, CI_I_ID, CI_I_NUMBER) values (%d, %d, %d, %d, %d, %d);",
-                    W_ID, D_ID, C_ID, N, OL_I_ID, i);
+            String CQL8 = String.format("insert into dbycql.customer_item (CI_W_ID, CI_D_ID, CI_C_ID, CI_O_ID, CI_I_ID) values (%d, %d, %d, %d, %d);",
+                    W_ID, D_ID, C_ID, N, OL_I_ID);
             simpleStatement = SimpleStatement.builder(CQL8)
                     .setExecutionProfileName("oltp")
                     .build();
