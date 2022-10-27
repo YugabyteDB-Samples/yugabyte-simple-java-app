@@ -8,6 +8,8 @@ import common.Transaction;
 import java.sql.*;
 import java.time.Instant;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @Package common.transactionImpl
@@ -24,7 +26,7 @@ public class NewOrderTransaction extends Transaction {
     List<Integer> quantities;
 
     @Override
-    protected void YSQLExecute(Connection conn) throws SQLException {
+    protected void YSQLExecute(Connection conn, Logger logger) throws SQLException {
         PreparedStatement statement = null;
         ResultSet rs = null;
 
@@ -36,7 +38,7 @@ public class NewOrderTransaction extends Transaction {
 
         try {
             // Transaction begin
-            System.out.println("Transaction starts");
+           logger.log(Level.FINE, String.format("Transaction starts"));
             conn.setAutoCommit(false);
             // SQL1
             String SQL1 = "update District set D_NEXT_O_ID = D_NEXT_O_ID + 1 where D_W_ID = ? and D_ID = ? returning D_NEXT_O_ID;";
@@ -142,11 +144,12 @@ public class NewOrderTransaction extends Transaction {
             statement.executeUpdate();
 
             conn.commit();
-            System.out.println("Transaction ends");
+           logger.log(Level.FINE, String.format("Transaction ends"));
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
-                System.err.print("Transaction is being rolled back\n");
+//                System.err.print("Transaction is being rolled back\n");
+                logger.log(Level.WARNING, "Transaction is being rolled back");
                 conn.rollback();
             }
         } finally {
@@ -159,7 +162,7 @@ public class NewOrderTransaction extends Transaction {
     }
 
     @Override
-    protected void YCQLExecute(CqlSession cqlSession) {
+    protected void YCQLExecute(CqlSession cqlSession, Logger logger) {
         com.datastax.oss.driver.api.core.cql.ResultSet rs = null;
         List<Row> rows = null;
         Row oneRow = null;
@@ -298,8 +301,8 @@ public class NewOrderTransaction extends Transaction {
         double C_DISCOUNT = oneRow.getBigDecimal(2).doubleValue();
 
         TOTAL_AMOUNT = TOTAL_AMOUNT * (1 + D_TAX + W_TAX) * (1 - C_DISCOUNT);
-        System.out.printf("W_ID=%d, D_ID=%d, C_ID=%d, C_LAST=%s, C_CREDIT=%s, C_DISCOUNT=%f, W_TAX=%f, D_TAX=%f, N=%d, current_time=%s, M=%d, TOTAL_AMOUNT=%f\n",
-                W_ID,D_ID,C_ID,C_LAST,C_CREDIT,C_DISCOUNT,W_TAX,D_TAX,N,current_time,M,TOTAL_AMOUNT);
+       logger.log(Level.FINE, String.format("W_ID=%d, D_ID=%d, C_ID=%d, C_LAST=%s, C_CREDIT=%s, C_DISCOUNT=%f, W_TAX=%f, D_TAX=%f, N=%d, current_time=%s, M=%d, TOTAL_AMOUNT=%f\n",
+                W_ID,D_ID,C_ID,C_LAST,C_CREDIT,C_DISCOUNT,W_TAX,D_TAX,N,current_time,M,TOTAL_AMOUNT));
     }
 
     public int getW_ID() {

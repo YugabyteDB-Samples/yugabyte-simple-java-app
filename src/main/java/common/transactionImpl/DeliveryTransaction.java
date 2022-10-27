@@ -10,13 +10,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class DeliveryTransaction extends Transaction {
     int W_ID;
     int CARRIER_ID;
 
     @Override
-    protected void YSQLExecute(Connection conn) throws SQLException {
+    protected void YSQLExecute(Connection conn, Logger logger) throws SQLException {
         conn.setAutoCommit(false);
         try {
             Statement stmt = conn.createStatement();
@@ -43,7 +45,7 @@ public class DeliveryTransaction extends Transaction {
             int[][] tmpList = new int[10][5];
             int index = 0;
             while (rs.next()) {
-                System.out.println("存参数中...");
+//               logger.log(Level.INFO, "存参数中...");
                 tmpList[index][0] = rs.getInt(1);
                 tmpList[index][1] = rs.getInt(2);
                 tmpList[index][2] = rs.getInt(3);
@@ -51,7 +53,7 @@ public class DeliveryTransaction extends Transaction {
                 tmpList[index][4] = rs.getInt(5);
                 index++;
             }
-            System.out.println("Delivery Transaction正在执行中...");
+           logger.log(Level.INFO, "Delivery Transaction正在执行中...");
             // 写一个for循环
             for (int i = 0; i < 10; i++) {
                 stmt.execute((String.format("UPDATE Orders SET O_CARRIER_ID=%d WHERE O_W_ID=%d and O_D_ID=%d and O_ID=%d", CARRIER_ID, tmpList[i][0], tmpList[i][1], tmpList[i][2])));
@@ -63,7 +65,7 @@ public class DeliveryTransaction extends Transaction {
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
-                System.err.print("Transaction is being rolled back\n");
+                logger.log(Level.WARNING, "Transaction is being rolled back");
                 conn.rollback();
             }
         } finally {
@@ -72,7 +74,7 @@ public class DeliveryTransaction extends Transaction {
     }
 
 
-    protected void YCQLExecute(CqlSession session) {
+    protected void YCQLExecute(CqlSession session, Logger logger) {
         int o_ID = 0;
         int c_ID = 0;
         int max_Order = 0;

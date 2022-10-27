@@ -13,6 +13,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @Package common.transactionImpl
@@ -27,7 +29,7 @@ public class OrderStatusTransaction extends Transaction {
     int C_ID;
 
     @Override
-    protected void YCQLExecute(CqlSession cqlSession) {
+    protected void YCQLExecute(CqlSession cqlSession, Logger logger) {
         ResultSet rs = null;
         List<Row> rows = null;
 
@@ -41,7 +43,7 @@ public class OrderStatusTransaction extends Transaction {
             String C_MIDDLE = row.getString(1);
             String C_LAST = row.getString(2);
             BigDecimal C_BALANCE = row.getBigDecimal(3);
-            System.out.printf("C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s,C_BALANCE=%f\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE);
+           logger.log(Level.FINE, String.format("C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s,C_BALANCE=%f\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE));
         }
 
         // CQL2
@@ -64,7 +66,7 @@ public class OrderStatusTransaction extends Transaction {
             int O_ID = O_IDs.get(i);
             Instant O_ENTRY_D = O_ENTRY_Ds.get(i);
             Integer O_CARRIER_ID = O_CARRIER_IDs.get(i);
-            System.out.printf("O_ID=%d,O_ENTRY_D=%s,O_CARRIER_ID=%d\n", O_ID, O_ENTRY_D, O_CARRIER_ID);
+           logger.log(Level.FINE, String.format("O_ID=%d,O_ENTRY_D=%s,O_CARRIER_ID=%d\n", O_ID, O_ENTRY_D, O_CARRIER_ID));
 
             // CQL3
             String CQL3 = String.format("select OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D from dbycql.OrderLine where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d", C_W_ID, C_D_ID, O_ID);
@@ -77,13 +79,13 @@ public class OrderStatusTransaction extends Transaction {
                 BigDecimal OL_QUANTITY = row.getBigDecimal(2); // DECIMAL(2,0);
                 BigDecimal OL_AMOUNT = row.getBigDecimal(3); // DECIMAL(6,2);
                 Instant OL_DELIVERY_D = row.getInstant(4);
-                System.out.printf("OL_I_ID=%d,OL_SUPPLY_W_ID=%d,OL_QUANTITY=%s,OL_AMOUNT=%s,OL_DELIVERY_D=%s\n", OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D);
+               logger.log(Level.FINE, String.format("OL_I_ID=%d,OL_SUPPLY_W_ID=%d,OL_QUANTITY=%s,OL_AMOUNT=%s,OL_DELIVERY_D=%s\n", OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D));
             }
         }
     }
 
     @Override
-    protected void YSQLExecute(Connection conn) throws SQLException {
+    protected void YSQLExecute(Connection conn, Logger logger) throws SQLException {
         conn.setAutoCommit(false);
         try {
             String SQL1 = "select C_FIRST, C_MIDDLE, C_LAST, C_BALANCE from Customer where C_W_ID = ? and C_D_ID = ? and C_ID = ?";
@@ -97,7 +99,7 @@ public class OrderStatusTransaction extends Transaction {
                 String C_MIDDLE = rs.getString(2);
                 String C_LAST = rs.getString(3);
                 double C_BALANCE = rs.getDouble(4);
-                System.out.printf("C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s,C_BALANCE=%f\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE);
+               logger.log(Level.FINE, String.format("C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s,C_BALANCE=%f\n", C_FIRST, C_MIDDLE, C_LAST, C_BALANCE));
             }
 
             // get O_ID
@@ -123,7 +125,7 @@ public class OrderStatusTransaction extends Transaction {
                 int O_ID = O_IDs.get(i);
                 Timestamp O_ENTRY_D = O_ENTRY_Ds.get(i);
                 int O_CARRIER_ID = O_CARRIER_IDs.get(i);
-                System.out.printf("O_ID=%d,O_ENTRY_D=%s,O_CARRIER_ID=%d\n", O_ID, O_ENTRY_D, O_CARRIER_ID);
+               logger.log(Level.FINE, String.format("O_ID=%d,O_ENTRY_D=%s,O_CARRIER_ID=%d\n", O_ID, O_ENTRY_D, O_CARRIER_ID));
                 String SQL3 = "select OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D from OrderLine where OL_W_ID = ? and OL_D_ID = ? and OL_O_ID = ?";
                 statement = conn.prepareStatement(SQL3);
                 statement.setInt(1, C_W_ID);
@@ -136,14 +138,15 @@ public class OrderStatusTransaction extends Transaction {
                     int OL_QUANTITY = rs.getInt(3); // DECIMAL(2,0);
                     double OL_AMOUNT = rs.getDouble(4); // DECIMAL(6,2);
                     Timestamp OL_DELIVERY_D = rs.getTimestamp(5); // TIMESTAMP
-                    System.out.printf("OL_I_ID=%d,OL_SUPPLY_W_ID=%d,OL_QUANTITY=%d,OL_AMOUNT=%f,OL_DELIVERY_D=%s\n", OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D);
+                   logger.log(Level.FINE, String.format("OL_I_ID=%d,OL_SUPPLY_W_ID=%d,OL_QUANTITY=%d,OL_AMOUNT=%f,OL_DELIVERY_D=%s\n", OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D));
                 }
             }
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
-                System.err.print("Transaction is being rolled back\n");
+//                System.err.print("Transaction is being rolled back\n");
+                logger.log(Level.WARNING, "Transaction is being rolled back");
                 conn.rollback();
             }
         } finally {

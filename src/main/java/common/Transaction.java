@@ -5,6 +5,8 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @Package common
@@ -18,38 +20,38 @@ public abstract class Transaction {
     private long startTimeStamp;
     private long executionTime;
 
-    public long executeYSQL(Connection conn) throws SQLException {
-        beforeExecute();
-        YSQLExecute(conn);
-        postExecute();
+    public long executeYSQL(Connection conn, Logger logger) throws SQLException {
+        beforeExecute(logger);
+        YSQLExecute(conn, logger);
+        postExecute(logger);
         return executionTime;
     }
 
-    public long executeYCQL(CqlSession cqlSession) {
-        beforeExecute();
-        YCQLExecute(cqlSession);
-        postExecute();
+    public long executeYCQL(CqlSession cqlSession, Logger logger) {
+        beforeExecute(logger);
+        YCQLExecute(cqlSession, logger);
+        postExecute(logger);
         return executionTime;
     }
 
-    protected void beforeExecute() {
+    protected void beforeExecute(Logger logger) {
         startTimeStamp = System.currentTimeMillis();
-        System.out.printf(transactionType.type + " begins\n");
+       logger.log(Level.FINE, String.format(transactionType.type + " begins\n"));
     }
 
-    protected void YSQLExecute(Connection conn) throws SQLException {
-
-    }
-
-    protected void YCQLExecute(CqlSession cqlSession) {
+    protected void YSQLExecute(Connection conn, Logger logger) throws SQLException {
 
     }
 
-    protected void postExecute() {
+    protected void YCQLExecute(CqlSession cqlSession, Logger logger) {
+
+    }
+
+    protected void postExecute(Logger logger) {
         long endTimeStamp = System.currentTimeMillis();
         long millis = TimeUnit.MILLISECONDS.toMillis(endTimeStamp - startTimeStamp);
         executionTime = millis;
-        System.out.printf("%s completes,takes %d milliseconds\n",transactionType, millis);
+       logger.log(Level.FINE, String.format("%s completes,takes %d milliseconds\n",transactionType, millis));
     }
 
     public TransactionType getTransactionType() {

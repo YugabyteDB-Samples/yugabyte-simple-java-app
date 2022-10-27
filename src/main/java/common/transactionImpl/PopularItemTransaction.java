@@ -13,6 +13,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @Package common.transactionImpl
@@ -26,12 +28,12 @@ public class PopularItemTransaction extends Transaction {
     int L;
 
     @Override
-    protected void YCQLExecute(CqlSession cqlSession) {
+    protected void YCQLExecute(CqlSession cqlSession, Logger logger) {
         ResultSet rs = null;
         List<Row> rows = null;
         SimpleStatement simpleStatement = null;
 
-        System.out.printf("W_ID=%d,D_ID=%d,L=%d\n", W_ID, D_ID, L);
+       logger.log(Level.FINE, String.format("W_ID=%d,D_ID=%d,L=%d\n", W_ID, D_ID, L));
 
         // CQL1
         String CQL1 = String.format("select D_NEXT_O_ID from dbycql.District where D_W_ID = %d and D_ID = %d", W_ID, D_ID);
@@ -82,7 +84,7 @@ public class PopularItemTransaction extends Transaction {
             String C_FIRST = onerow.getString(0);
             String C_MIDDLE = onerow.getString(1);
             String C_LAST = onerow.getString(2);
-            System.out.printf("O_ID=%d,O_ENTRY_D=%s,C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s\n", O_ID, O_ENTRY_D, C_FIRST, C_MIDDLE, C_LAST);
+           logger.log(Level.FINE, String.format("O_ID=%d,O_ENTRY_D=%s,C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s\n", O_ID, O_ENTRY_D, C_FIRST, C_MIDDLE, C_LAST));
 
             // CQL4
             String CQL4 = String.format("select OL_W_ID, OL_D_ID, OL_O_ID, OL_QUANTITY from dbycql.OrderLine where OL_W_ID = %d and OL_D_ID = %d and OL_O_ID = %d limit 1;", W_ID, D_ID, O_ID);
@@ -121,7 +123,7 @@ public class PopularItemTransaction extends Transaction {
                         .build();
                 rs = cqlSession.execute(simpleStatement);
                 String I_NAME = rs.one().getString(0);
-                System.out.printf("O_ID=%d,I_NAME=%s,MAX_OL_QUANTITY=%f\n", O_ID, I_NAME, MAX_OL_QUANTITY);
+               logger.log(Level.FINE, String.format("O_ID=%d,I_NAME=%s,MAX_OL_QUANTITY=%f\n", O_ID, I_NAME, MAX_OL_QUANTITY));
             }
         }
 
@@ -143,13 +145,13 @@ public class PopularItemTransaction extends Transaction {
             rs = cqlSession.execute(simpleStatement);
             long I_NUM = rs.one().getLong(0);
             double I_Percentage = I_NUM * 100.0 / L;
-            System.out.printf("I_NAME=%s, I_Percentage= %f%% \n", I_NAME, I_Percentage);
+           logger.log(Level.FINE, String.format("I_NAME=%s, I_Percentage= %f%% \n", I_NAME, I_Percentage));
         }
     }
 
     @Override
-    protected void YSQLExecute(Connection conn) throws SQLException {
-        System.out.printf("W_ID=%d,D_ID=%d,L=%d\n", W_ID, D_ID, L);
+    protected void YSQLExecute(Connection conn, Logger logger) throws SQLException {
+       logger.log(Level.FINE, String.format("W_ID=%d,D_ID=%d,L=%d\n", W_ID, D_ID, L));
         conn.setAutoCommit(false);
         try {
             // SQL1
@@ -182,7 +184,7 @@ public class PopularItemTransaction extends Transaction {
                 String C_FIRST = rs.getString(3);
                 String C_MIDDLE = rs.getString(4);
                 String C_LAST = rs.getString(5);
-                System.out.printf("O_ID=%d,O_ENTRY_D=%s,C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s\n", O_ID, O_ENTRY_D, C_FIRST, C_MIDDLE, C_LAST);
+               logger.log(Level.FINE, String.format("O_ID=%d,O_ENTRY_D=%s,C_FIRST=%s,C_MIDDLE=%s,C_LAST=%s\n", O_ID, O_ENTRY_D, C_FIRST, C_MIDDLE, C_LAST));
             }
 
             // SQL3
@@ -199,7 +201,7 @@ public class PopularItemTransaction extends Transaction {
                 int O_ID = rs.getInt(1);
                 String I_NAME = rs.getString(2);
                 int OL_QUANTITY = rs.getInt(3);
-                System.out.printf("O_ID=%d,I_NAME=%s,OL_QUANTITY=%d\n", O_ID, I_NAME, OL_QUANTITY);
+               logger.log(Level.FINE, String.format("O_ID=%d,I_NAME=%s,OL_QUANTITY=%d\n", O_ID, I_NAME, OL_QUANTITY));
             }
 
 
@@ -217,14 +219,15 @@ public class PopularItemTransaction extends Transaction {
             while (rs.next()) {
                 String I_NAME = rs.getString(1);
                 double percentage = rs.getDouble(2);
-                System.out.printf("I_NAME=%s,Percentage=%f%%\n", I_NAME, percentage);
+               logger.log(Level.FINE, String.format("I_NAME=%s,Percentage=%f%%\n", I_NAME, percentage));
             }
 
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
-                System.err.print("Transaction is being rolled back\n");
+//                System.err.print("Transaction is being rolled back\n");
+                logger.log(Level.WARNING, "Transaction is being rolled back");
                 conn.rollback();
             }
         } finally {

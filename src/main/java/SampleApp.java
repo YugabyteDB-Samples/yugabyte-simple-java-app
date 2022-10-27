@@ -5,19 +5,83 @@ import common.transactionImpl.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.Level;
 
 public class SampleApp {
-    private static Connection conn;
-    private static CqlSession cqlSession;
+    private Connection conn;
+    private CqlSession cqlSession;
+    private static final int N = 20;
+    private static int countDownLatchTimeout = 8;
 
     public static void main(String[] args) {
-        // 1. Construct requests from files.
-        List<Transaction> list = null;
+        String MODE = DataSource.YSQL;// by default, run YSQL
+        if (args != null && args.length != 0 && args[0].equals(DataSource.YCQL)) MODE = DataSource.YCQL;
+        String[] inputFileList = new String[N];
+        String[] outputFileList = new String[N];
+        for (int i = 0; i < N; i++) {
+            inputFileList[i] = "src/main/resources/xact_files/" + i + ".txt";
+            outputFileList[i] = "log" + i + ".txt";
+            Logger logger = Logger.getLogger(outputFileList[i]);
+            try {
+                Handler handler = new FileHandler(outputFileList[i]);
+                handler.setFormatter(new SimpleFormatter());
+                logger.addHandler(handler);
+                logger.setLevel(Level.FINEST);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        CountDownLatch countDownLatch = new CountDownLatch(N);
+        ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+
+        for (int i = 0; i < N; i++) {
+            String finalMODE = MODE;
+            int finalI = i;
+            cachedThreadPool.execute(() -> {
+                Logger logger = Logger.getLogger(outputFileList[finalI]);
+                try {
+                    logger.log(Level.INFO, Thread.currentThread().getName() + " starts ");
+                    new SampleApp().doWork(finalMODE, inputFileList[finalI], logger);
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, Thread.currentThread().getName() + " exception ");
+                } finally {
+                    logger.log(Level.INFO, Thread.currentThread().getName() + " ends ");
+                    countDownLatch.countDown();
+                }
+            });
+        }
+
+        System.out.println("Main thread waits");
         try {
-            list = readFile();
+            System.out.println("CountDownLatchTimeout = " + countDownLatchTimeout);
+            countDownLatch.await(countDownLatchTimeout, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            System.out.println("Exception: await interrupted exception");
+        } finally {
+            System.out.println("countDownLatch: " + countDownLatch.toString());
+        }
+        System.out.println("Main thread ends");
+
+        cachedThreadPool.shutdown();
+    }
+
+    public void doWork(String MODE, String inputFileName, Logger logger) {
+        logger.log(Level.INFO, Thread.currentThread().getName() + "do work");
+
+        // 1. Construct requests from files.
+        List<Transaction> list = new ArrayList<>();
+        try {
+            readFile(inputFileName, list, logger);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -25,24 +89,27 @@ public class SampleApp {
 
         // 2. Establish a DB connection
         try {
-            if (DataSource.MODE.equals(DataSource.YSQL)) {
-                System.out.println("Connecting to DB. Your mode is YSQL.");
-                conn = DataSource.getSQLConnection();
-                System.out.println("Isolation level=" + conn.getTransactionIsolation());
+            if (MODE.equals(DataSource.YSQL)) {
+                logger.log(Level.INFO, Thread.currentThread().getName() + "do work");
+                logger.log(Level.INFO, "Connecting to DB. Your mode is YSQL.");
+                conn = new DataSource(MODE).getSQLConnection();
+                logger.log(Level.INFO, "Conn = "+ conn.getClientInfo());
+//                logger.log(Level.INFO, "Isolation level=" + conn.getTransactionIsolation());
             } else {
-                System.out.println("Connecting to DB. Your mode is YCQL.");
-                cqlSession = DataSource.getCQLSession();
+                logger.log(Level.INFO, "Connecting to DB. Your mode is YCQL.");
+                cqlSession = new DataSource(MODE).getCQLSession();
+                logger.log(Level.INFO, "CQLSession = "+ cqlSession.getName());
             }
-            System.out.println(">>>> Successfully connected to YugabyteDB.");
+            logger.log(Level.INFO, ">>>> Successfully connected to YugabyteDB.");
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         // 3. execute and report
         ExecuteManager executeManager = new ExecuteManager();
-        if (DataSource.MODE.equals(DataSource.YSQL)) {
+        if (MODE.equals(DataSource.YSQL)) {
             try {
-                executeManager.executeYSQL(conn, list);
+                executeManager.executeYSQL(conn, list, logger);
             } catch (SQLException e) {
                 e.printStackTrace();
             } finally {
@@ -54,20 +121,18 @@ public class SampleApp {
             }
         } else {
             try {
-                executeManager.executeYCQL(cqlSession, list);
-            }
-            finally {
+                executeManager.executeYCQL(cqlSession, list, logger);
+            } finally {
                 cqlSession.close();
             }
         }
-        executeManager.report();
+        executeManager.report(logger);
     }
 
 
-    private static List<Transaction> readFile() throws FileNotFoundException {
-        String inputFileName = "src/main/resources/xact_files/0.txt";
-        Scanner scanner = new Scanner(new File(inputFileName));
-        List<Transaction> list = new ArrayList<>();
+    private static List<Transaction> readFile(String fileName, List<Transaction> list, Logger logger) throws FileNotFoundException {
+        logger.log(Level.INFO, Thread.currentThread().getName() + " reads from file " + fileName);
+        Scanner scanner = new Scanner(new File(fileName));
         while (scanner.hasNextLine()) {
             String[] firstLine = scanner.nextLine().split(",");
             String type = firstLine[0];
@@ -91,7 +156,7 @@ public class SampleApp {
             }
             if (transaction != null) list.add(transaction);
         }
-        System.out.printf("Read {%d} orders from file={%s}\n", list.size(), inputFileName);
+        logger.log(Level.INFO, Thread.currentThread().getName() + " reads " + list.size() + " requests from " + fileName);
         return list;
     }
 
@@ -110,7 +175,7 @@ public class SampleApp {
     private static Transaction assembleTopBalanceTransaction(String[] firstLine, Scanner scanner) {
         TopBalanceTransaction topBalanceTransaction = new TopBalanceTransaction();
         topBalanceTransaction.setTransactionType(TransactionType.TOP_BALANCE);
-//        System.out.println("add a top balance item trans");
+//        logger.log(Level.INFO, "add a top balance item trans");
         return topBalanceTransaction;
     }
 
@@ -120,7 +185,7 @@ public class SampleApp {
         int L = Integer.parseInt(firstLine[3]);
         PopularItemTransaction popularItemTransaction = new PopularItemTransaction(W_ID, D_ID, L);
         popularItemTransaction.setTransactionType(TransactionType.POPULAR_ITEM);
-//        System.out.println("add a popular item trans");
+//        logger.log(Level.INFO, "add a popular item trans");
         return popularItemTransaction;
     }
 
@@ -131,7 +196,7 @@ public class SampleApp {
         int L = Integer.parseInt(firstLine[4]);
         StockLevelTransaction stockLevelTransaction = new StockLevelTransaction(W_ID, D_ID, T, L);
         stockLevelTransaction.setTransactionType(TransactionType.STOCK_LEVEL);
-//        System.out.println("add a stock level trans");
+//        logger.log(Level.INFO, "add a stock level trans");
         return stockLevelTransaction;
     }
 
@@ -141,7 +206,7 @@ public class SampleApp {
         int C_ID = Integer.parseInt(firstLine[3]);
         OrderStatusTransaction orderStatusTransaction = new OrderStatusTransaction(C_W_ID, C_D_ID, C_ID);
         orderStatusTransaction.setTransactionType(TransactionType.ORDER_STATUS);
-//        System.out.println("add a order status trans");
+//        logger.log(Level.INFO, "add a order status trans");
         return orderStatusTransaction;
     }
 

@@ -1,11 +1,12 @@
 import com.datastax.oss.driver.api.core.CqlSession;
 import common.Transaction;
 import common.TransactionType;
-import jnr.ffi.annotations.In;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * @Package PACKAGE_NAME
@@ -17,13 +18,14 @@ public class ExecuteManager {
     private Set<TransactionType> skipSet;
     private List<Statistics> transactionTypeList;
     private Map<TransactionType, Integer> skipMap;
+    private int counter;
 
     public ExecuteManager() {
         transactionTypeList = new ArrayList<>(8);
         skipSet = new HashSet<>(8);
         skipMap = new HashMap<>(8);
+        counter = 0;
 
-//        System.out.println(TransactionType.values());
         transactionTypeList.add(new Statistics(TransactionType.NEW_ORDER));
         transactionTypeList.add(new Statistics(TransactionType.PAYMENT));
         transactionTypeList.add(new Statistics(TransactionType.DELIVERY));
@@ -44,42 +46,45 @@ public class ExecuteManager {
 
         // 反选逻辑
 //        skipSet.addAll(Arrays.asList(TransactionType.values()));
-//        skipSet.remove(TransactionType.NEW_ORDER);
+//        skipSet.remove(TransactionType.PAYMENT);
     }
 
-    public void executeYSQL(Connection conn, List<Transaction> list) throws SQLException {
-        System.out.printf("Execute YSQL transactions\n");
+    public void executeYSQL(Connection conn, List<Transaction> list, Logger logger) throws SQLException {
+        logger.log(Level.INFO, "Execute YSQL transactions\n");
         for (Transaction transaction : list) {
-            if (skipSet.contains(transaction.getTransactionType())) continue;
-            int cnt = skipMap.get(transaction.getTransactionType());
-            if (cnt >= 1) continue;
-            skipMap.put(transaction.getTransactionType(), cnt+1);
+//            if (skipSet.contains(transaction.getTransactionType())) continue;
+//            int cnt = skipMap.get(transaction.getTransactionType());
+//            if (cnt >= 1) continue;
+//            skipMap.put(transaction.getTransactionType(), cnt+1);
 
-            long executionTime = transaction.executeYSQL(conn);
+            long executionTime = transaction.executeYSQL(conn, logger);
             transactionTypeList.get(transaction.getTransactionType().index).addNewData(executionTime);
-            report();
+            report(logger);
         }
     }
 
-    public void executeYCQL(CqlSession session, List<Transaction> list) {
-        System.out.printf("Execute YCQL transactions\n");
+    public void executeYCQL(CqlSession session, List<Transaction> list, Logger logger) {
+        logger.log(Level.INFO, "Execute YCQL transactions\n");
         for (Transaction transaction : list) {
-            if (skipSet.contains(transaction.getTransactionType())) continue;
-            int cnt = skipMap.get(transaction.getTransactionType());
-            if (cnt >= 1) continue;
-            skipMap.put(transaction.getTransactionType(), cnt+1);
-            
-            long executionTime = transaction.executeYCQL(session);
+//            if (skipSet.contains(transaction.getTransactionType())) continue;
+//            int cnt = skipMap.get(transaction.getTransactionType());
+//            if (cnt >= 1) continue;
+//            skipMap.put(transaction.getTransactionType(), cnt+1);
+
+            long executionTime = transaction.executeYCQL(session, logger);
             transactionTypeList.get(transaction.getTransactionType().index).addNewData(executionTime);
-            report();
+            report(logger);
         }
     }
 
-    public void report() {
-        System.out.println("---Statistics start---");
-        for (Statistics statistics : transactionTypeList) {
-            System.out.println(statistics);
+    public void report(Logger logger) {
+        counter++; // print statistics every 5 transactions.
+        if (counter % 5 == 0) {
+            logger.log(Level.INFO, "---Statistics start---");
+            for (Statistics statistics : transactionTypeList) {
+                logger.log(Level.INFO, statistics.toString());
+            }
+            logger.log(Level.INFO, "---Statistics end---");
         }
-        System.out.println("---Statistics end---");
     }
 }

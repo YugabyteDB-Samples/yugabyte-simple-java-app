@@ -15,23 +15,22 @@ import java.util.Properties;
  * @Date 1/10/22 3:21 PM
  */
 public class DataSource {
-    private static HikariConfig config;
-    private static HikariDataSource ds;
+    private HikariConfig config;
+    private HikariDataSource ds;
 
-    private static CqlSession session;
-    public static String MODE;
+    private CqlSession session;
+    public String MODE;
     public static final String YSQL = "YSQL";
     public static final String YCQL = "YCQL";
 
-    static {
+
+    public DataSource(String MODE) {
         Properties settings = new Properties();
         try {
             settings.load(SampleApp.class.getResourceAsStream("app.properties"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        MODE = settings.getProperty("mode");
-        System.out.println("Your mode is " + MODE);
         if (MODE.equals(YSQL)) {
             Properties poolProperties = new Properties();
             poolProperties.setProperty("dataSourceClassName", "com.yugabyte.ysql.YBClusterAwareDataSource");
@@ -61,15 +60,12 @@ public class DataSource {
 
 
     // YCQL
-    public static CqlSession getCQLSession() {
+    public CqlSession getCQLSession() {
         return session;
     }
 
-    private DataSource() {
-    }
-
     // YSQL
-    public static Connection getSQLConnection() throws SQLException {
+    public Connection getSQLConnection() throws SQLException {
         return ds.getConnection();
     }
 }

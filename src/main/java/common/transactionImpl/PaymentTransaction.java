@@ -5,14 +5,13 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import common.Transaction;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.Duration;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 // YSQL: 400ms, YCQL: 350ms
 public class PaymentTransaction extends Transaction {
@@ -22,22 +21,22 @@ public class PaymentTransaction extends Transaction {
     int C_ID;
     float PAYMENT;
 
-    protected void YSQLExecute(Connection conn) throws SQLException {
+    protected void YSQLExecute(Connection conn, Logger logger) throws SQLException {
         conn.setAutoCommit(false);
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(String.format("UPDATE Warehouse SET W_YTD = W_YTD + %f WHERE W_ID = %d RETURNING W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP", PAYMENT, C_W_ID));
 //            ResultSet rs = stmt.getResultSet();
 //            if (rs.next()) {
-//                System.out.println(rs.getString(3));
+//               logger.log(Level.FINE, rs.getString(3));
 //            }
             stmt.execute(String.format("UPDATE District SET D_YTD = D_YTD + %f WHERE D_W_ID = %d AND D_ID = %d RETURNING D_STREET_1, D_STREET_2, D_CITY, D_STATE, D_ZIP", PAYMENT, C_W_ID, C_D_ID));
-//            System.out.println(stmt.getResultSet());
+//           logger.log(Level.FINE, stmt.getResultSet());
             stmt.execute(String.format("UPDATE Customer SET C_BALANCE = C_BALANCE - %f, C_YTD_PAYMENT = C_YTD_PAYMENT + %f, C_PAYMENT_CNT = C_PAYMENT_CNT + 1 WHERE C_W_ID = %d " +
                                         "AND C_D_ID = %d AND C_ID = %d " +
                                         "RETURNING C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_STREET_1, C_STREET_2, C_CITY, " +
                                         "C_STATE, C_ZIP, C_PHONE, C_SINCE, C_CREDIT,C_CREDIT_LIM, C_DISCOUNT, C_BALANCE", PAYMENT, PAYMENT, C_W_ID, C_D_ID, C_ID));
-//            System.out.println(stmt.getResultSet().getString(0));
+//           logger.log(Level.FINE, stmt.getResultSet().getString(0));
 //            stmt.execute(String.format("UPDATE Customer SET C_YTD_PAYMENT = C_YTD_PAYMENT + %f WHERE C_W_ID = %d AND C_D_ID = %d AND C_ID = %d", PAYMENT, C_W_ID, C_D_ID, C_ID));
 //            stmt.execute(String.format("UPDATE Customer SET C_PAYMENT_CNT = C_PAYMENT_CNT + %d WHERE C_W_ID = %d AND C_D_ID = %d AND C_ID = %d", 1, C_W_ID, C_D_ID, C_ID));
 //            ResultSet rs = stmt.executeQuery(String.format("select " +
@@ -56,22 +55,23 @@ public class PaymentTransaction extends Transaction {
 //                    "left join District t3 " +
 //                    "on t1.C_D_ID=t3.D_ID " +
 //                    "wHERE t1.C_W_ID=%d AND t1.C_D_ID=%d AND t1.C_ID=%d", PAYMENT, C_W_ID, C_D_ID, C_ID));
-            System.out.println("Payment Transaction正在执行中...");
+           logger.log(Level.FINE, "Payment Transaction正在执行中...");
 //            while (rs.next()) {
-//                System.out.println("C_W_ID: " + rs.getInt(1) + "C_D_ID: " + rs.getInt(2) + "C_ID" + rs.getInt(3));
-//                System.out.println("C_FIRST: " + rs.getString(4) + "C_MIDDLE: " + rs.getString(5) + "C_LAST" + rs.getString(6));
-//                System.out.println("C_STREET_1: " + rs.getString(7) + "C_STREET_2: " + rs.getString(8) + "C_CITY: " + rs.getString(9) + "C_STATE: " + rs.getString(10) + "C_ZIP: " + rs.getString(11));
-//                System.out.println("C_PHONE：" + rs.getString(12) + "C_SINCE: " + rs.getString(13) + "C_CREDIT: " + rs.getString(14));
-//                System.out.println("C_CREDIT_LIM: " + rs.getFloat(15) + "C_DISCOUNT: " + rs.getFloat(16) + "C_BALANCE: " + rs.getFloat(17));
-//                System.out.println("W_STREET_1: " + rs.getString(18) + "W_STREET_2: " + rs.getString(19) + "W_CITY: " + rs.getString(20) + "W_STATE: " + rs.getString(21) + "W_ZIP: " + rs.getString(22));
-//                System.out.println("D_STREET_1: " + rs.getString(23) + "D_STREET_2: " + rs.getString(24) + "D_CITY: " + rs.getString(25) + "D_STATE: " + rs.getString(26) + "D_ZIP: " + rs.getString(27));
+//               logger.log(Level.FINE, "C_W_ID: " + rs.getInt(1) + "C_D_ID: " + rs.getInt(2) + "C_ID" + rs.getInt(3));
+//               logger.log(Level.FINE, "C_FIRST: " + rs.getString(4) + "C_MIDDLE: " + rs.getString(5) + "C_LAST" + rs.getString(6));
+//               logger.log(Level.FINE, "C_STREET_1: " + rs.getString(7) + "C_STREET_2: " + rs.getString(8) + "C_CITY: " + rs.getString(9) + "C_STATE: " + rs.getString(10) + "C_ZIP: " + rs.getString(11));
+//               logger.log(Level.FINE, "C_PHONE：" + rs.getString(12) + "C_SINCE: " + rs.getString(13) + "C_CREDIT: " + rs.getString(14));
+//               logger.log(Level.FINE, "C_CREDIT_LIM: " + rs.getFloat(15) + "C_DISCOUNT: " + rs.getFloat(16) + "C_BALANCE: " + rs.getFloat(17));
+//               logger.log(Level.FINE, "W_STREET_1: " + rs.getString(18) + "W_STREET_2: " + rs.getString(19) + "W_CITY: " + rs.getString(20) + "W_STATE: " + rs.getString(21) + "W_ZIP: " + rs.getString(22));
+//               logger.log(Level.FINE, "D_STREET_1: " + rs.getString(23) + "D_STREET_2: " + rs.getString(24) + "D_CITY: " + rs.getString(25) + "D_STATE: " + rs.getString(26) + "D_ZIP: " + rs.getString(27));
 //            }
-            System.out.println("Payment Transaction执行完毕！");
+           logger.log(Level.FINE, "Payment Transaction执行完毕！");
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             if (conn != null) {
-                System.err.print("Transaction is being rolled back\n");
+//                System.err.print("Transaction is being rolled back\n");
+                logger.log(Level.WARNING, "Transaction is being rolled back");
                 conn.rollback();
             }
         } finally {
@@ -79,8 +79,8 @@ public class PaymentTransaction extends Transaction {
         }
     }
 
-    protected void YCQLExecute(CqlSession session) {
-        System.out.println("执行payment cql中..");
+    protected void YCQLExecute(CqlSession session, Logger logger) {
+       logger.log(Level.FINE, "执行payment cql中..");
         // cql1
         SimpleStatement stmt = SimpleStatement.newInstance(String.format("select W_YTD from dbycql.Warehouse where W_ID=%d", C_W_ID));
         com.datastax.oss.driver.api.core.cql.ResultSet rs1 = session.execute(stmt);

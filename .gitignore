@@ -8,3 +8,6 @@ src/main/.DS_Store
 # ignore 老师给的数据和Xact文件
 *_files/
 
+# ignore log files
+log*txt*
+
