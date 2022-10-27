@@ -5,11 +5,9 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import common.Transaction;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -98,10 +96,13 @@ public class DeliveryTransaction extends Transaction {
                     "WHERE O_W_ID=%d and O_D_ID=%d and O_ID=%d", CARRIER_ID, W_ID, d_ID, o_ID));
             session.execute(stmt);
             // 第二个cql
-            stmt = SimpleStatement.newInstance(String.format("select max(OL_NUMBER) as max_order " +
+            String second_cql = String.format("select max(OL_NUMBER) as max_order " +
                     "from dbycql.OrderLine " +
-                    "where OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d", W_ID, d_ID, o_ID));
-            rs = session.execute(stmt);
+                    "where OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d", W_ID, d_ID, o_ID);
+            SimpleStatement simpleStatement0 = SimpleStatement.builder(second_cql)
+                    .setExecutionProfileName("oltp").setTimeout(Duration.ofSeconds(20))
+                    .build();
+            session.execute(simpleStatement0);
             rsIterator = rs.iterator();
             while (rsIterator.hasNext()) {
                 Row row = rsIterator.next();
@@ -109,15 +110,19 @@ public class DeliveryTransaction extends Transaction {
             }
             // 第三个cql
             for (int ol_num = 1; ol_num < max_Order; ol_num++) {
-//                stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.OrderLine SET OL_DELIVERY_D=toTimestamp(now()) " +
-//                        "WHERE OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d and OL_NUMBER=%d", W_ID, d_ID, o_ID, ol_num));
-//                session.execute(stmt);
-                String third_cql = String.format("UPDATE dbycql.OrderLine SET OL_DELIVERY_D=toTimestamp(now()) " +
-                        "WHERE OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d and OL_NUMBER=%d", W_ID, d_ID, o_ID, ol_num);
-                SimpleStatement simpleStatement = SimpleStatement.builder(third_cql)
-                        .setExecutionProfileName("oltp").setTimeout(Duration.ofSeconds(30))
-                        .build();
-                session.execute(simpleStatement);
+                stmt = SimpleStatement.newInstance(String.format("SELECT OL_QUANTITY from dbycql.OrderLine WHERE OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d and OL_NUMBER=%d",  W_ID, d_ID, o_ID, ol_num));
+                rs = session.execute(stmt);
+                rsIterator = rs.iterator();
+                while (rsIterator.hasNext()) {
+                    Row row = rsIterator.next();
+                    float OL_QUANTITY = Objects.requireNonNull(row.getBigDecimal("OL_QUANTITY")).floatValue();
+                    String third_cql = String.format("UPDATE dbycql.OrderLine SET OL_DELIVERY_D=toTimestamp(now()) " +
+                            "WHERE OL_W_ID=%d and OL_D_ID=%d and OL_O_ID=%d and OL_NUMBER=%d and OL_QUANTITY=%f", W_ID, d_ID, o_ID, ol_num, OL_QUANTITY);
+                    SimpleStatement simpleStatement = SimpleStatement.builder(third_cql)
+                            .setExecutionProfileName("oltp").setTimeout(Duration.ofSeconds(30))
+                            .build();
+                    session.execute(simpleStatement);
+                }
             }
             // 第四个cql
             stmt = SimpleStatement.newInstance(String.format("SELECT " +
@@ -131,14 +136,41 @@ public class DeliveryTransaction extends Transaction {
                 Row row = rsIterator.next();
                 sum_Amt = Objects.requireNonNull(row.getBigDecimal("SUM_AMT")).floatValue();
             }
-            // 第五个cql
-            stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_BALANCE=C_BALANCE+%d " +
-                    "WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", (int)sum_Amt, W_ID, d_ID, c_ID));
-            session.execute(stmt);
-            // 第六个cql
-            stmt = SimpleStatement.newInstance(String.format("UPDATE dbycql.Customer_counter SET C_DELIVERY_CNT=C_DELIVERY_CNT+%d" +
-                    "WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", 1, W_ID, d_ID, c_ID));
-            session.execute(stmt);
+            // 第五个cql, 在外面更新C_BALANCE
+            stmt = SimpleStatement.newInstance(String.format("SELECT C_BALANCE from dbycql.Customer WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", W_ID, d_ID, c_ID));
+            rs = session.execute(stmt);
+            Iterator<Row> rs1Iterator = rs.iterator();
+            while (rs1Iterator.hasNext()) {
+                Row row = rs1Iterator.next();
+                float tmp_balance = Objects.requireNonNull(row.getBigDecimal("C_BALANCE")).floatValue();
+                // 传所有clustering key，删除符合条件的行
+                tmp_balance += sum_Amt;
+                SimpleStatement stmt2 = SimpleStatement.newInstance(String.format("SELECT * from dbycql.Customer WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", W_ID, d_ID, c_ID));
+                com.datastax.oss.driver.api.core.cql.ResultSet rs2 = session.execute(stmt2);
+                // 删除改行
+                stmt = SimpleStatement.newInstance(String.format("DELETE from dbycql.Customer WHERE C_W_ID=%d and C_D_ID=%d and C_ID=%d", W_ID, d_ID, c_ID));
+                session.execute(stmt);
+                Iterator<Row> rs2Iterator = rs2.iterator();
+                while (rs2Iterator.hasNext()) {
+                    Row row1 = rs2Iterator.next();
+                    Instant since = row1.getInstant("C_since");
+                    if (since == null) {
+                        stmt = SimpleStatement.newInstance(String.format("insert into dbycql.customer (C_W_id,C_D_id,C_id,C_first,C_middle,C_last,C_street_1,C_street_2,C_city,C_state,C_zip,C_phone,C_since,C_credit,C_credit_lim,C_discount,C_balance,C_ytd_payment,C_payment_cnt,C_delivery_cnt,C_data) " +
+                                        "values (%d,%d,%d,\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',NULL,\'%s\',%f,%f,%f,%f,%d,%d,\'%s\')", W_ID, d_ID, c_ID, row1.getString("C_first"), row1.getString("C_middle"), row1.getString("C_last"), row1.getString("C_street_1"), row1.getString("C_street_2"),
+                                row1.getString("C_city"), row1.getString("C_state"), row1.getString("C_zip"), row1.getString("C_phone"),  row1.getString("C_credit"), Objects.requireNonNull(row1.getBigDecimal("C_credit_lim")).floatValue(),
+                                Objects.requireNonNull(row1.getBigDecimal("C_discount")).floatValue(), tmp_balance,
+                                Objects.requireNonNull(row1.getBigDecimal("C_ytd_payment")).floatValue(), row1.getInt("C_payment_cnt"), row1.getInt("C_delivery_cnt")+1, row1.getString("C_data")));
+                        session.execute(stmt);
+                    }else {
+                        stmt = SimpleStatement.newInstance(String.format("insert into dbycql.customer (C_W_id,C_D_id,C_id,C_first,C_middle,C_last,C_street_1,C_street_2,C_city,C_state,C_zip,C_phone,C_since,C_credit,C_credit_lim,C_discount,C_balance,C_ytd_payment,C_payment_cnt,C_delivery_cnt,C_data) " +
+                                        "values (%d,%d,%d,\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',%f,%f,%f,%f,%d,%d,\'%s\')", W_ID, d_ID, c_ID, row1.getString("C_first"), row1.getString("C_middle"), row1.getString("C_last"), row1.getString("C_street_1"), row1.getString("C_street_2"),
+                                row1.getString("C_city"), row1.getString("C_state"), row1.getString("C_zip"), row1.getString("C_phone"), since, row1.getString("C_credit"), Objects.requireNonNull(row1.getBigDecimal("C_credit_lim")).floatValue(),
+                                Objects.requireNonNull(row1.getBigDecimal("C_discount")).floatValue(), tmp_balance,
+                                Objects.requireNonNull(row1.getBigDecimal("C_ytd_payment")).floatValue(), row1.getInt("C_payment_cnt"), row1.getInt("C_delivery_cnt")+1, row1.getString("C_data")));
+                        session.execute(stmt);
+                    }
+                }
+            }
         }
     }
 

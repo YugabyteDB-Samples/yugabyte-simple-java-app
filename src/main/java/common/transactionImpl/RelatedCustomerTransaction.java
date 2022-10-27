@@ -62,7 +62,7 @@ public class RelatedCustomerTransaction extends Transaction {
                     "OL_I_ID " +
 
                     // 正式环境需要更新为orderline表
-                    "from dbycql.orderline2 " +
+                    "from dbycql.orderline " +
                     "where OL_W_ID=%d " +
                     "and OL_D_ID=%d" +
                     "and OL_O_ID=%d ", row.getInt(0), row.getInt(1), row.getInt(2)));
