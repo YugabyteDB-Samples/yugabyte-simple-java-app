@@ -52,8 +52,9 @@ public class ExecuteManager {
         for (Transaction transaction : list) {
             if (skipSet.contains(transaction.getTransactionType())) continue;
             int cnt = skipMap.get(transaction.getTransactionType());
-            if (cnt >= 100) continue;
+            if (cnt >= 1) continue;
             skipMap.put(transaction.getTransactionType(), cnt+1);
+
             long executionTime = transaction.executeYSQL(conn);
             transactionTypeList.get(transaction.getTransactionType().index).addNewData(executionTime);
             report();
@@ -64,6 +65,10 @@ public class ExecuteManager {
         System.out.printf("Execute YCQL transactions\n");
         for (Transaction transaction : list) {
             if (skipSet.contains(transaction.getTransactionType())) continue;
+            int cnt = skipMap.get(transaction.getTransactionType());
+            if (cnt >= 1) continue;
+            skipMap.put(transaction.getTransactionType(), cnt+1);
+            
             long executionTime = transaction.executeYCQL(session);
             transactionTypeList.get(transaction.getTransactionType().index).addNewData(executionTime);
             report();

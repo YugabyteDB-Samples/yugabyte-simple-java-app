@@ -166,7 +166,7 @@ public class DeliveryTransaction extends Transaction {
                                         "values (%d,%d,%d,\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',%f,%f,%f,%f,%d,%d,\'%s\')", W_ID, d_ID, c_ID, row1.getString("C_first"), row1.getString("C_middle"), row1.getString("C_last"), row1.getString("C_street_1"), row1.getString("C_street_2"),
                                 row1.getString("C_city"), row1.getString("C_state"), row1.getString("C_zip"), row1.getString("C_phone"), since, row1.getString("C_credit"), Objects.requireNonNull(row1.getBigDecimal("C_credit_lim")).floatValue(),
                                 Objects.requireNonNull(row1.getBigDecimal("C_discount")).floatValue(), tmp_balance,
-                                Objects.requireNonNull(row1.getBigDecimal("C_ytd_payment")).floatValue(), row1.getInt("C_payment_cnt"), row1.getInt("C_delivery_cnt")+1, row1.getString("C_data")));
+                                row1.getFloat("C_ytd_payment"), row1.getInt("C_payment_cnt"), row1.getInt("C_delivery_cnt")+1, row1.getString("C_data")));
                         session.execute(stmt);
                     }
                 }

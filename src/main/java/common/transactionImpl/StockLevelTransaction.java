@@ -5,7 +5,6 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import common.SQLEnum;
 import common.Transaction;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -94,8 +93,7 @@ public class StockLevelTransaction extends Transaction {
                 System.err.print("Transaction is being rolled back\n");
                 conn.rollback();
             }
-        }
-        finally {
+        } finally {
             conn.setAutoCommit(true);
         }
     }

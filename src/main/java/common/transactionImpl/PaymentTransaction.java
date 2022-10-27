@@ -109,8 +109,8 @@ public class PaymentTransaction extends Transaction {
         Iterator<Row> rs3Iterator = rs3.iterator();
         while (rs3Iterator.hasNext()) {
             Row row = rs3Iterator.next();
-            float tmp_payment = Objects.requireNonNull(row.getBigDecimal(0)).floatValue();
-            float tmp_ytd_payment = Objects.requireNonNull(row.getBigDecimal(1)).floatValue();
+            float tmp_payment = row.getBigDecimal(0).floatValue();
+            float tmp_ytd_payment = row.getFloat(1);
             tmp_payment -= PAYMENT;
             tmp_ytd_payment += PAYMENT;
             // 拿Customer表的所有列内容
